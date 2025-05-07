@@ -1,0 +1,107 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - MonedApp</title>
+    <script type="importmap"></script>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/sidebar.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/home.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/MonedApp.styles.css" asp-append-version="true" />
+
+    @* Fontawesome *@
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v6.4.2/css/all.css">
+
+    @* SweetAlert2 *@
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    @* Charts.js *@
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    @* Fuentes *@
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Contenedor principal con menú lateral -->
+    <div class="container">
+        <!-- Contenedor principal -->
+        <div id="wrapper">
+            <!-- Sidebar -->
+            <div class="bg-sidebar text-black border-end rounded-3" id="sidebar-wrapper">
+                <div class="sidebar-heading">
+                    <a class="navbar-brand fw-semibold h1" asp-area="" asp-controller="Dashboard" asp-action="Index">
+                        @* <img src="~/images/MonedApp6-dark.png" alt="MonedApp" style="width: 53px; height: 53px;" /> *@
+                        <img src="@AppImages.Logo" alt="MonedApp" style="width: 53px; height: 53px;" />
+                        MonedApp
+                    </a>
+                </div>
+                <div class="list-group list-group-flush">
+                    <a class="list-group-item list-group-item-action bg-sidebar text-black @((ViewData["ActivePage"]?.ToString() == "IndexDS") ? "activo" : "")" asp-area="" asp-controller="Dashboard" asp-action="Index">
+                        <i class="fas fa-chart-line fa-fw me-2"></i> <span class="d-none d-md-inline">Dashboard</span>
+                    </a>
+
+                    <a class="list-group-item list-group-item-action bg-sidebar text-black @((ViewData["ActivePage"]?.ToString() == "IndexCU") ? "activo" : "")" asp-area="" asp-controller="Cuentas" asp-action="Index">
+                        <i class="fas fa-wallet fa-fw me-2"></i> <span class="d-none d-md-inline">Cuentas</span>
+                    </a>
+
+                    <a class="list-group-item list-group-item-action bg-sidebar text-black @((ViewData["ActivePage"]?.ToString() == "IndexTN") ? "activo" : "")" asp-area="" asp-controller="Transacciones" asp-action="Index">
+                        <i class="fas fa-exchange-alt fa-fw me-2"></i> <span class="d-none d-md-inline">Transacciones</span>
+                    </a>
+
+                    <a class="list-group-item list-group-item-action bg-sidebar text-black @((ViewData["ActivePage"]?.ToString() == "IndexCT") ? "activo" : "")" asp-area="" asp-controller="Categorias" asp-action="Index">
+                        <i class="fas fa-folder fa-fw me-2"></i> <span class="d-none d-md-inline">Categorías</span>
+                    </a>
+
+                    <a class="list-group-item list-group-item-action bg-sidebar text-black @((ViewData["ActivePage"]?.ToString() == "IndexFR") ? "activo" : "")" asp-area="" asp-controller="FondosReserva" asp-action="Index">
+                        <i class="fas fa-piggy-bank fa-fw me-2"></i> <span class="d-none d-md-inline">Fondos de reserva</span>
+                    </a>
+                </div>
+            </div>
+
+            @using System.Security.Claims
+
+            @{
+                var nombreUsuario = Context.User.FindFirst(ClaimTypes.Name).Value;
+            }
+
+            <!-- Barra superior -->
+            <div id="topbar" class="d-flex justify-content-between align-items-center rounded-3">
+                <div class="dropdown-center ms-2">
+                    <button class="btn btn-light dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        @nombreUsuario
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end mt-3" aria-labelledby="userDropdown">
+                        <li>
+                            <a class="dropdown-item my-1" asp-controller="Usuarios" asp-action="Index">
+                                <i class="fas fa-user-circle fa-fw me-2"></i> Perfil
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <a asp-controller="Auth" asp-action="Logout" class="btn btn-outline-danger btn-sm me-2">
+                    <i class="fa-solid fa-right-from-bracket"></i> Cerrar sesión
+                </a>
+            </div>
+
+
+            <!-- Contenido principal -->
+            <div id="page-content-wrapper">
+                <main role="main" class="container-fluid">
+                    @RenderBody()
+                </main>
+            </div>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,114 @@
+﻿@{
+    ViewData["Title"] = "Registro";
+    Layout = "~/Views/Shared/_LayoutLogin.cshtml";  // Usamos un layout diferente para el login
+}
+
+<div class="login-container">
+    <div class="login-box">
+        <div class="logo-container">
+            @* <img src="~/images/MonedApp6-dark.png" alt="Logo" class="logo-img"> *@
+            <img src="@AppImages.Logo" alt="Logo" class="logo-img">
+            <h2 class="brand-name mb-4">MonedApp</h2>
+        </div>
+
+        <form asp-controller="Auth" asp-action="Register" method="post" id="registerForm">
+            <div class="input-group mb-3">
+                <label class="form-label w-100">Nombre y apellidos</label>
+                <span class="input-group-text rounded-start-2"><i class="fa-solid fa-user-plus"></i></span>
+                <input type="text" name="nombre" class="form-control" required />
+            </div>
+
+            <div class="input-group mb-3">
+                <label class="form-label w-100">DNI/NIE</label>
+                <span class="input-group-text rounded-start-2"><i class="fa-solid fa-dna"></i></span>
+                <input type="text" name="dni" id="dni" class="form-control" required />
+            </div>
+
+            <div class="input-group mb-3">
+                <label class="form-label w-100">Correo Electrónico</label>
+                <span class="input-group-text rounded-start-2"><i class="fa-solid fa-envelope"></i></span>
+                <input type="email" name="email" class="form-control" required />
+            </div>
+
+            <div class="input-group mb-4">
+                <label class="form-label w-100">Contraseña</label>
+                <span class="input-group-text rounded-start-2"><i class="fa-solid fa-lock"></i></span>
+                <input type="password" name="password" id="password" class="form-control" required />
+                <button class="input-group-text" type="button" id="togglePassword">
+                    <i class="fa-solid fa-eye-slash"></i>
+                </button>
+            </div>
+
+            <!-- Botón con Spinner -->
+            <button type="submit" class="btn btn-primary w-100" id="submitBtn2">
+                <span id="btnText">Registrar cuenta</span>
+                <span class="spinner-border spinner-border-sm d-none" id="spinner" role="status" aria-hidden="true"></span>
+            </button>
+        </form>
+
+        <p class="text-center mt-4 pt-2 mb-0">
+            ¿Ya tienes una cuenta? <a asp-controller="Auth" asp-action="Login">Inicia sesión</a>
+        </p>
+    </div>
+</div>
+
+<script>
+    document.getElementById("togglePassword").addEventListener("click", function () {
+        var passwordInput = document.getElementById("password");
+        var icon = this.querySelector("i");
+
+        if (passwordInput.type === "password") {
+            passwordInput.type = "text";
+            icon.classList.remove("fa-eye-slash");
+            icon.classList.add("fa-eye");
+        } else {
+            passwordInput.type = "password";
+            icon.classList.remove("fa-eye");
+            icon.classList.add("fa-eye-slash");
+        }
+    });
+
+    document.getElementById("registerForm").addEventListener("submit", function (e) {
+        var submitBtn2 = document.getElementById("submitBtn2");
+        var btnText = document.getElementById("btnText");
+        var spinner = document.getElementById("spinner");
+        var rememberMeCheckbox = document.getElementById("rememberMe");
+
+        submitBtn2.disabled = true;  // Deshabilitar el botón para evitar múltiples envíos
+        btnText.classList.add("d-none");  // Ocultar el texto "Iniciar sesión"
+        spinner.classList.remove("d-none");  // Mostrar el spinner
+    });
+</script>
+
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <script>
+        window.onload = function() {
+            Swal.fire({
+                icon: 'error',
+                title: '¡Error!',
+                text: '@TempData["ErrorMessage"]',
+                confirmButtonText: 'Aceptar'
+            });
+        };
+    </script>
+}
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <script>
+        window.onload = function() {
+            Swal.fire({
+                icon: 'success',
+                title: '¡Éxito!',
+                text: '@TempData["SuccessMessage"]',
+                confirmButtonText: 'Aceptar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = '@Url.Action("Login", "Auth")'; 
+                }
+            });
+        };
+    </script>
+}

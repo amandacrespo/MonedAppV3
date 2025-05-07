@@ -1,0 +1,125 @@
+﻿@{
+    ViewData["Title"] = "Iniciar Sesión";
+    Layout = "~/Views/Shared/_LayoutLogin.cshtml";  // Usamos un layout diferente para el login
+}
+
+<div class="login-container">
+    <div class="login-box">
+        <div class="logo-container">
+            @* <img src="~/images/MonedApp6-dark.png" alt="Logo" class="logo-img"> *@
+            <img src="@AppImages.Logo" alt="Logo" class="logo-img">
+            <h2 class="brand-name mb-4">MonedApp</h2>
+        </div>
+
+        <form asp-controller="Auth" asp-action="Login" method="post" id="loginForm">
+            <div class="input-group mb-3">
+                <label class="form-label w-100">Correo Electrónico</label>
+                <span class="input-group-text rounded-start-2"><i class="fa-solid fa-envelope"></i></span>
+                <input type="email" name="email" class="form-control" required />
+            </div>
+
+            <div class="input-group mb-4">
+                <label class="form-label w-100">Contraseña</label>
+                <span class="input-group-text rounded-start-2"><i class="fa-solid fa-lock"></i></span>
+                <input type="password" name="password" id="password" class="form-control" required />
+                <button class="input-group-text" type="button" id="togglePassword">
+                    <i class="fa-solid fa-eye-slash"></i>
+                </button>
+            </div>
+
+            <div class="form-check mb-4">
+                <input class="form-check-input" type="checkbox" id="rememberMe">
+                <label class="form-check-label" for="rememberMe">Recordar mis credenciales</label>
+            </div>
+
+            <!-- Botón con Spinner -->
+            <button type="submit" class="btn btn-primary w-100" id="submitBtn">
+                <span id="btnText">Iniciar sesión</span>
+                <span class="spinner-border spinner-border-sm d-none" id="spinner" role="status" aria-hidden="true"></span>
+            </button>
+        </form>
+
+        <p class="text-center mt-4 pt-2 mb-0">
+            ¿Aún no tienes una cuenta? <a asp-controller="Auth" asp-action="Register">Regístrate</a>
+        </p>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById("togglePassword").addEventListener("click", function () {
+            var passwordInput = document.getElementById("password");
+            var icon = this.querySelector("i");
+
+            if (passwordInput.type === "password") {
+                passwordInput.type = "text";
+                icon.classList.remove("fa-eye-slash");
+                icon.classList.add("fa-eye");
+            } else {
+                passwordInput.type = "password";
+                icon.classList.remove("fa-eye");
+                icon.classList.add("fa-eye-slash");
+            }
+        });
+
+        // Función para leer cookies
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+        }
+
+        // Mostrar las credenciales si la cookie existe
+        window.onload = function() {
+            const emailCookie = getCookie('email');
+            const passwordCookie = getCookie('password');
+            const rememberMe = getCookie('rememberMe');
+
+            if (rememberMe === 'true') {
+                document.querySelector("input[name='email']").value = emailCookie || '';
+                document.querySelector("input[name='password']").value = passwordCookie || '';
+                document.querySelector("input#rememberMe").checked = true;
+            }
+        };
+
+        // Mostrar spinner dentro del botón al enviar formulario
+        document.getElementById("loginForm").addEventListener("submit", function (e) {
+            var submitBtn = document.getElementById("submitBtn");
+            var btnText = document.getElementById("btnText");
+            var spinner = document.getElementById("spinner");
+            var rememberMeCheckbox = document.getElementById("rememberMe");
+
+            submitBtn.disabled = true;  // Deshabilitar el botón para evitar múltiples envíos
+            btnText.classList.add("d-none");  // Ocultar el texto "Iniciar sesión"
+            spinner.classList.remove("d-none");  // Mostrar el spinner
+
+            if (rememberMeCheckbox.checked) {
+                var email = document.querySelector("input[name='email']").value;
+                var password = document.querySelector("input[name='password']").value;
+
+                // Guardar credenciales en cookies por 7 días (604800 segundos)
+                document.cookie = `email=${email};path=/;max-age=604800;Secure;SameSite=Strict`;
+                document.cookie = `password=${password};path=/;max-age=604800;Secure;SameSite=Strict`;
+                document.cookie = `rememberMe=true;path=/;max-age=604800;Secure;SameSite=Strict`;
+            } else {
+                document.cookie = "email=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;Secure;SameSite=Strict";
+                document.cookie = "password=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;Secure;SameSite=Strict";
+                document.cookie = "rememberMe=false; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;Secure;SameSite=Strict";
+            }
+        });
+    </script>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <script>
+            window.onload = function() {
+                Swal.fire({
+                    icon: 'error',
+                    title: '¡Error!',
+                    text: '@TempData["ErrorMessage"]',
+                    confirmButtonText: 'Aceptar'
+                });
+            };
+        </script>
+    }
+}

@@ -1,0 +1,858 @@
+﻿@{
+    ViewData["Title"] = "Fondo reserva";
+    FondosDTO datos = Model as FondosDTO ?? new FondosDTO();
+}
+
+@using System.Globalization
+
+<div class="container-fluid m-0 p-0">
+    <div class="row g-3">
+        <!-- Fondos de Reserva -->
+        <div class="col-lg-6">
+            <div class="bento-item bento-medium">
+                <div class="d-flex justify-content-between align-items-center mb-2 pb-1">
+                    <h5 class="mb-0">
+                        <i class="fa-solid fa-piggy-bank me-2"></i> Fondos de reserva
+                    </h5>
+                    <button class="btn btn-primary btn-sm" id="addFondoBtn">
+                        <i class="fa-solid fa-plus"></i>
+                    </button>
+                </div>
+
+                <form id="formSeleccionCuenta" method="post" asp-controller="FondosReserva" asp-action="Index">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <select class="form-select w-auto py-1" id="selectCuenta" name="idCuenta">
+                            @foreach (CuentaDTO cu in ViewBag.Cuentas)
+                            {
+                                <option value="@cu.IdCuenta" selected="@(cu.IdCuenta == ViewBag.CuentaSeleccionada ? "selected" : null)">
+                                    @cu.NombreCuenta
+                                </option>
+                            }
+                        </select>
+                        <button type="submit" class="btn btn-primary btn-sm" @(ViewBag.Cuentas.Count > 1 ? "" : "disabled")>Cambiar</button>
+                    </div>
+                </form>
+
+                @if (datos != null && datos.FondosReserva.Any())
+                {
+                    <div style="max-height: 364px; overflow-y: auto;">
+                        <ul class="list-group">
+                            @foreach (var fondo in datos.FondosReserva)
+                            {
+                                decimal porcentaje = fondo.MontoObjetivo > 0 ? (fondo.MontoGastado / fondo.MontoObjetivo) * 100 : 0;
+                                string progresoColor = porcentaje <= 50 ? "bg-success" :
+                                porcentaje <= 75 ? "bg-warning" :
+                                "bg-danger";
+                               
+                                var formato = new System.Globalization.CultureInfo("en-US");
+                                string porcentajeTexto = porcentaje.ToString("0.00", formato); 
+
+                                var collapseId = "collapseDescripcion_" + fondo.IdFondo;
+
+                                <li class="list-group-item mb-3 bg-light mx-1" style="box-shadow: 2px 3px 4px rgba(0, 0, 0, 0.1); border: 1px solid rgba(0,0,0,0.1)">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <!-- Contenido de la izquierda (Categoria, Estado, Fechas) -->
+                                        <div class="text-start ms-2">
+                                            <h5 class="mb-2">@fondo.CategoriaFondo</h5>
+
+                                            <span class="badge @(datos.Cuenta.TipoCuenta == "Personal" ? "bg-secondary" : "bg-primary") rounded-pill fw-normal mb-3">
+                                                @datos.Cuenta.TipoCuenta
+                                            </span>
+
+                                            <span class="badge @(fondo.EstadoFondo == "Activo" ? "text-bg-success" :
+                                                fondo.EstadoFondo == "Completado" ? "text-bg-primary bg-primary" :
+                                                "text-bg-danger") rounded-pill fw-normal mb-3">
+                                                @fondo.EstadoFondo
+                                            </span>
+
+                                            <!-- Fechas -->
+                                            <p class="text-muted small mb-1 mt-2">
+                                                Fecha creación: @fondo.FechaCreacion.ToString("dd/MM/yyyy")
+                                            </p>
+
+                                            @if (fondo.FechaObjetivo != null)
+                                            {
+                                                <p class="text-muted small mb-1">
+                                                    Fecha objetivo: @fondo.FechaObjetivo.Value.ToString("dd/MM/yyyy")
+                                                </p>
+                                            }
+                                        </div>
+
+                                        <!-- Contenido de la derecha (Monto y progreso) -->
+                                        <div class="text-end ms-3 pe-2 pe-md-0" style="flex-shrink: 0;">
+                                            <small>
+                                                <strong>@fondo.MontoGastado.ToString("C", CultureInfo.GetCultureInfo("es-ES"))</strong>
+                                                de
+                                                <strong>@fondo.MontoObjetivo.ToString("C", CultureInfo.GetCultureInfo("es-ES"))</strong>
+                                            </small>
+                                            <div class="progress mt-2" style="width: 150px; height: 6px;">
+                                                <div class="progress-bar @progresoColor" role="progressbar"
+                                                     style="width: @porcentajeTexto%;"
+                                                     aria-valuenow="@porcentajeTexto" aria-valuemin="0" aria-valuemax="100">
+                                                </div>
+                                            </div>
+
+                                            <!-- Botón para ver descripción, alineado abajo a la derecha -->
+                                            <div class="text-end mt-2">
+                                                <button class="btn btn-link p-0" type="button" data-bs-toggle="collapse" data-bs-target="#@collapseId" aria-expanded="false" aria-controls="@collapseId">
+                                                    <!-- Icono que cambia automáticamente dependiendo del estado del collapse -->
+                                                    <i class="fa-solid fa-chevron-down me-2" id="icono-@collapseId"></i>
+                                                </button>
+
+                                                <script>
+                                                    // Cambia el ícono cuando se hace clic
+                                                    document.querySelectorAll('[data-bs-toggle="collapse"]').forEach(button => {
+                                                        button.addEventListener('click', function () {
+                                                            const icon = button.querySelector('i');
+                                                            const isExpanded = button.getAttribute('aria-expanded') === 'true';
+                                                            if (isExpanded) {
+                                                                icon.classList.remove('fa-chevron-down');
+                                                                icon.classList.add('fa-chevron-up');
+                                                            } else {
+                                                                icon.classList.remove('fa-chevron-up');
+                                                                icon.classList.add('fa-chevron-down');
+                                                            }
+                                                        });
+                                                    });
+                                                </script>
+
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Descripción en Collapse -->
+                                    <div class="collapse mt-2 px-2 px-md-0" id="@collapseId">
+                                        <div class="card card-body shadow-sm text-start">
+                                            <strong>Descripción:</strong>
+                                            <p class="mb-0">@fondo.Descripcion</p>
+                                        </div>
+                                    </div>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-secondary mt-3 mb-0 role="alert">
+                        <i class="fa-solid fa-circle-info me-2"></i>No hay fondos de reserva creados.
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Subcategorías -->
+        <div class="col-lg-6">
+            <div class="bento-item bento-medium">
+                <div class="d-flex justify-content-between align-items-center mb-2 pb-1">
+                    <h5 class="mb-0">
+                        <i class="fa-solid fa-diagram-next me-2"></i> Subcategorías por fondo
+                    </h5>
+                    <button class="btn btn-primary btn-sm" id="addSubBtn">
+                        <i class="fa-solid fa-plus"></i>
+                    </button>
+                </div>
+
+                @if (datos.Subcategorias.Any())
+                {
+                    <div class="list-group overflow-auto pe-1 mt-2" style="max-height: 414px;">
+                        @foreach (var fondo in datos.FondosReserva)
+                        {
+                            var subcategoriasFondo = datos.Subcategorias.Where(s => s.IdFondo == fondo.IdFondo).ToList();
+
+                            if (subcategoriasFondo.Any())
+                            {
+                                <div class="card w-100 mb-3 border-1 shadow-sm">
+                                    <div class="card-header text-white" style="background-color: #1565c0;">
+                                        <span class="fw-semibold fs-5">@fondo.CategoriaFondo</span>
+                                    </div>
+                                    <ul class="list-group list-group-flush">
+                                        @foreach (var sub in subcategoriasFondo)
+                                        {
+                                            decimal porcentajeSub = sub.MontoUtilizado > 0
+                                            ? (sub.MontoUtilizado / sub.MontoAsignado) * 100
+                                            : 0;
+
+                                            // Ajustar la lógica de color según los porcentajes
+                                            string colorProgreso = porcentajeSub < 50 ? "bg-success" :
+                                            porcentajeSub < 75 ? "bg-warning" :
+                                            "bg-danger";
+
+                                            var formato = new System.Globalization.CultureInfo("en-US");
+                                            string porcentajeSubTexto = porcentajeSub.ToString("0.00", formato);
+
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                <div class="text-start ps-2 ps-md-0">
+                                                    <strong>@sub.NombreSubcategoria</strong>
+                                                    <p class="text-muted small mb-0">Monto gastado: @sub.MontoUtilizado.ToString("C", CultureInfo.GetCultureInfo("es-ES"))</p>
+                                                </div>
+                                                <div class="text-end pe-2 pe-md-0">
+                                                    <small>
+                                                        <strong>@sub.MontoUtilizado.ToString("C", CultureInfo.GetCultureInfo("es-ES"))</strong>
+                                                        de
+                                                        <strong>@sub.MontoAsignado.ToString("C", CultureInfo.GetCultureInfo("es-ES"))</strong>
+                                                    </small>
+                                                    <div class="d-flex justify-content-end mt-2">
+                                                        <div class="progress" style="width: 120px; height: 6px;">
+                                                            <div class="progress-bar @colorProgreso" role="progressbar"
+                                                                 style="width: @porcentajeSubTexto%;"
+                                                                 aria-valuenow="@porcentajeSubTexto" aria-valuemin="0" aria-valuemax="100">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                        }
+                                    </ul>
+                                </div>
+                            }
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-secondary mt-3 mb-0 role="alert">
+                        <i class="fa-solid fa-circle-info me-2"></i>No hay subcategorías creadas.
+                    </div>
+                }
+            </div>
+        </div>
+
+
+        <!-- Acciones rápidas -->
+        <div class="col-lg-6">
+            <div class="bento-item bento-medium">
+                <h5 class="pb-1">
+                    <i class="fa-solid fa-sliders me-2"></i> Acciones rápidas
+                </h5>
+
+                @if (datos.FondosReserva.Count > 0)
+                {
+                    <!-- Listado de Fondos con Acciones -->
+                    <ul class="list-group overflow-auto pe-1" style="max-height: 412px; min-height: 140px;">
+                        @foreach (var fondo in datos.FondosReserva)
+                        {
+                            @if(fondo.EstadoFondo == "Activo"){
+                                <li class="list-group-item rounded p-3 mb-3 bg-light" style="box-shadow: 2px 3px 4px rgba(0, 0, 0, 0.1); border: 1px solid rgba(0,0,0,0.1)">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h5 class="mb-1 text-primary">@fondo.CategoriaFondo</h5>
+                                        </div>
+
+                                        <!-- Menú de opciones para el fondo -->
+                                        <div class="dropdown">
+                                            <button class="btn btn-light btn-sm rounded-circle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                <i class="fa-solid fa-ellipsis-vertical"></i>
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                                @*<li><a class="dropdown-item" href="#"><i class="fa-solid fa-pen me-2"></i>Editar fondo</a></li>*@
+
+                                                <li>
+                                                    <a class="dropdown-item text-success" asp-controller="FondosReserva" asp-action="CompletarFondo" asp-route-id="@fondo.IdFondo" asp-route-cuenta="@ViewBag.CuentaSeleccionada">
+                                                        <i class="fa-solid fa-check-circle me-2 fs-6"></i>Completar
+                                                    </a>
+                                                </li>
+
+                                                <li>
+                                                    <!-- Botón para eliminar fondo -->
+                                                    <button class="dropdown-item text-danger" onclick="confirmarEliminacionFondo(@fondo.IdFondo)">
+                                                        <i class="fa-solid fa-trash me-2 fs-6"></i>Eliminar
+                                                    </button>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+
+                                    @if (datos.Subcategorias.Any(s => s.IdFondo == fondo.IdFondo))
+                                    {
+                                        <!-- Subcategorías del fondo -->
+                                        <ul class="list-group mt-2">
+                                            @foreach (var subcategoria in datos.Subcategorias.Where(s => s.IdFondo == fondo.IdFondo))
+                                            {
+                                                <li class="list-group-item d-flex justify-content-between align-items-center ps-3 py-2 border rounded" style="border-color: rgba(0,0,0,0.2);">
+
+                                                    <span class="text-dark fs-6">@subcategoria.NombreSubcategoria</span>
+
+                                                    <!-- Botones de opciones para la subcategoría -->
+                                                    <div>
+                                                        @if (@subcategoria.MontoAsignado != @subcategoria.MontoUtilizado)
+                                                        {
+                                                            <button class="btn btn-sm btn-outline-primary btnAgregarUtilizadoSubcategoria"
+                                                                    data-idsubcategoria="@subcategoria.IdSubcategoria"
+                                                                    data-montoasignado="@subcategoria.MontoAsignado"
+                                                                    data-montoutilizado="@subcategoria.MontoUtilizado">
+                                                                <i class="fa-solid fa-plus"></i>
+                                                            </button>
+                                                        }
+
+                                                        <button class="btn btn-sm btn-outline-secondary btnEditarSubcategoria" data-idsubcategoria="@subcategoria.IdSubcategoria" data-nombresubcategoria="@subcategoria.NombreSubcategoria" data-montoasignado="@subcategoria.MontoAsignado" data-montoutilizado="@subcategoria.MontoUtilizado">
+                                                            <i class="fa-solid fa-pen"></i>
+                                                        </button>
+
+                                                        <button class="btn btn-sm btn-outline-danger" onclick="confirmarEliminacionSubcategoria(@subcategoria.IdSubcategoria)">
+                                                            <i class="fa-solid fa-trash"></i>
+                                                        </button>
+                                                    </div>
+                                                </li>
+                                            }
+                                        </ul>
+                                    }
+                                    else
+                                    {
+                                        <div class="alert alert-secondary mt-3 mb-0 role="alert">
+                                            <i class="fa-solid fa-circle-info me-2"></i>No hay subcategorías creadas.
+                                        </div>
+                                    }
+                                </li>
+                            }
+                            else {
+                                <li class="list-group-item rounded p-3 mb-3 bg-light" style="box-shadow: 2px 3px 4px rgba(0, 0, 0, 0.1); border: 1px solid rgba(0,0,0,0.1)">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h5 class="mb-1 text-primary">@fondo.CategoriaFondo</h5>
+                                        </div>
+
+                                        <!-- Menú de opciones para el fondo -->
+                                        <div class="dropdown">
+                                            <button class="btn btn-light btn-sm rounded-circle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                <i class="fa-solid fa-ellipsis-vertical"></i>
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                                @*<li><a class="dropdown-item" href="#"><i class="fa-solid fa-pen me-2"></i>Editar fondo</a></li>*@
+                                                
+                                                <li>
+                                                    <a class="dropdown-item text-primary" asp-controller="FondosReserva" asp-action="ReactivarFondo" asp-route-id="@fondo.IdFondo" asp-route-cuenta="@ViewBag.CuentaSeleccionada">
+                                                        <i class="fa-solid fa-undo me-2 fs-6"></i>Reactivar
+                                                    </a>
+                                                </li>
+
+                                                <li>
+                                                    <!-- Botón para eliminar fondo -->
+                                                    <button class="dropdown-item text-danger" onclick="confirmarEliminacionFondo(@fondo.IdFondo)">
+                                                        <i class="fa-solid fa-trash me-2 fs-6"></i>Eliminar fondo
+                                                    </button>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+
+                                    @if (datos.Subcategorias.Any(s => s.IdFondo == fondo.IdFondo))
+                                    {
+                                        <!-- Subcategorías del fondo -->
+                                        <ul class="list-group mt-2">
+                                            @foreach (var subcategoria in datos.Subcategorias.Where(s => s.IdFondo == fondo.IdFondo))
+                                            {
+                                                <li class="list-group-item text-start ps-3 py-2 border rounded" style="border-color: rgba(0,0,0,0.2);">
+                                                    <span class="text-dark fs-6">@subcategoria.NombreSubcategoria</span>
+                                                </li>
+                                            }
+                                        </ul>
+                                    }
+                                    else
+                                    {
+                                        <div class="alert alert-secondary mt-3 mb-0 role="alert">
+                                            <i class="fa-solid fa-circle-info me-2"></i>No hay subcategorías creadas.
+                                        </div>
+                                    }
+                                </li>
+                            }
+                        }
+                    </ul>
+                }
+                else {
+                    <div class="d-flex justify-content-center align-items-center text-center p-4 m-0" style="height: calc(100% - 45px);">
+                        <div style="max-width: 620px;">
+                            @* <img src="~/images/accionesrapidas.png" alt="No cuentas" class="img-fluid mb-3" style="max-width: 215px;"> *@
+                            <img src="@AppImages.AccionesRapidas" alt="No cuentas" class="img-fluid mb-3" style="max-width: 215px;">
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Historial de gastos -->
+        <div class="col-lg-6">
+            <div class="bento-item bento-medium" style="max-height: 480px; min-height: 140px;">
+                <h5 class="pb-1">
+                    <i class="fa-solid fa-wallet me-2"></i> Resumen financiero
+                </h5>
+
+                @{
+                    decimal montoReservado = datos.TotalObjetivo - datos.TotalGastado;
+                    decimal disponibleReal = datos.Cuenta.SaldoActual - montoReservado;
+                }
+
+                <div class="row text-center mt-2">
+                    <!-- Saldo Actual -->
+                    <div class="col-12">
+                        <div class="card border-1 rounded-3 py-1 px-2 mb-2 w-100 shadow-sm">
+                            <div class="card-body">
+                                <i class="fa-solid fa-money-bill-wave text-success fs-5"></i>
+                                <h6 class="text-muted mb-2">Saldo Actual</h6>
+                                <p class="fw-semibold text-success fs-4 mb-0">
+                                    @datos.Cuenta.SaldoActual.ToString("C", CultureInfo.GetCultureInfo("es-ES"))
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Monto Reservado -->
+                    <div class="col-12 mt-1">
+                        <div class="card border-1 rounded-3 mb-2 py-1 px-2 w-100 shadow-sm">
+                            <div class="card-body">
+                                <i class="fa-solid fa-lock text-danger fs-5"></i>
+                                <h6 class="text-muted mb-2">Reservado</h6>
+                                <p class="fw-semibold text-danger fs-4 mb-0">
+                                    -@montoReservado.ToString("C", CultureInfo.GetCultureInfo("es-ES"))
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Disponible Real -->
+                    <div class="col-12 mt-1">
+                        <div class="card border-1 rounded-3 py-1 px-2 w-100 shadow-sm">
+                            <div class="card-body">
+                                <i class="fa-solid fa-coins text-primary fs-5"></i>
+                                <h6 class="text-muted mb-2">Disponible</h6>
+                                <p class="fw-semibold text-primary fs-4 mb-0">
+                                    @disponibleReal.ToString("C", CultureInfo.GetCultureInfo("es-ES"))
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById("addFondoBtn").addEventListener("click", function () {
+            let today = new Date().toISOString().split("T")[0];
+
+            Swal.fire({
+                title: "Nuevo fondo",
+                html: `
+                    <div class="mb-3 text-start">
+                        <label for="categoriaFondo" class="form-label">Nombre</label>
+                        <input type="text" class="form-control" id="categoriaFondo" placeholder="Ej. Emergencias" required>
+                    </div>
+                    <div class="mb-3 text-start">
+                        <label for="descripcion" class="form-label">Descripción</label>
+                        <textarea class="form-control" id="descripcion" placeholder="Ej. Fondo de reserva para emergencias en el extranjero" required></textarea>
+                    </div>
+                    <div class="mb-3 text-start">
+                        <label for="montoObjetivo" class="form-label">Monto objetivo (sin decimales)</label>
+                        <input type="number" class="form-control" id="montoObjetivo" placeholder="Ej. 5000" step="1" pattern="^\d+$" required>
+                    </div>
+                    <div class="mb-2 text-start">
+                        <label for="fechaObjetivo" class="form-label">Fecha objetivo</label>
+                        <input type="date" class="form-control" id="fechaObjetivo" min=${today} required>
+                    </div>
+                `,
+                confirmButtonText: "Crear",
+                showCancelButton: true,
+                preConfirm: () => {
+                    return {
+                        idCuenta: document.getElementById("selectCuenta").value,
+                        categoriaFondo: document.getElementById("categoriaFondo").value,
+                        montoObjetivo: document.getElementById("montoObjetivo").value,
+                        fechaObjetivo: document.getElementById("fechaObjetivo").value,
+                        descripcion: document.getElementById("descripcion").value,
+                    };
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    enviarDatosFondo(result.value);
+                }
+            });
+        });     
+
+        function enviarDatosFondo(datos) {
+            fetch("/FondosReserva/CreateFondo", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    IdCuenta: datos.idCuenta,
+                    CategoriaFondo: datos.categoriaFondo,
+                    MontoObjetivo: parseFloat(datos.montoObjetivo),
+                    FechaObjetivo: datos.fechaObjetivo,
+                    Descripcion: datos.descripcion
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire("Éxito", "El fondo de reserva fue creado correctamente.", "success")
+                        .then(() => location.reload());
+                } else {
+                    Swal.fire("Error", data.message || "No se pudo crear el fondo.", "error");
+                }
+            })
+            .catch(() => {
+                Swal.fire("Error", "Hubo un problema en la conexión.", "error");
+            });
+        }
+
+        function confirmarEliminacionFondo(idFondo) {
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: 'Esto eliminará el fondo y todas sus subcategorías asociadas.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    eliminarFondo(idFondo);
+                }
+            });
+        }
+
+        function eliminarFondo(idFondo) {
+            fetch('/FondosReserva/EliminarFondo', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ idFondo: idFondo })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire('Eliminado', 'El fondo y sus subcategorías fueron eliminados correctamente.', 'success')
+                        .then(() => location.reload()); 
+                } else {
+                    Swal.fire('Error', 'No se pudo eliminar el fondo.', 'error');
+                }
+            })
+            .catch(error => {
+                Swal.fire('Error', 'Hubo un problema al intentar eliminar el fondo.', 'error');
+            });
+        }
+
+        document.getElementById("addSubBtn").addEventListener("click", function () {
+            let fondos = @Html.Raw(Json.Serialize(datos.FondosReserva));  // Obtener los fondos desde Razor
+            let subcategorias = @Html.Raw(Json.Serialize(datos.Subcategorias));  // Obtener las subcategorías desde Razor
+
+            // Calcular el monto gastado de las subcategorías por fondo
+            fondos.forEach(fondo => {
+                fondo.montoGastado = subcategorias
+                    .filter(subcategoria => subcategoria.idFondo === fondo.idFondo)
+                    .reduce((total, subcategoria) => total + subcategoria.montoAsignado, 0);
+            });
+
+            // Filtrar fondos activos (solo los activos pueden ser seleccionados)
+            let fondosActivos = fondos.filter(fondo => fondo.estadoFondo === "Activo");
+
+            // Generar el HTML para el select con los fondos disponibles
+            let fondosOptions = fondosActivos.map(fondo => {
+                let maxMonto = fondo.montoObjetivo - fondo.montoGastado; // Calcular el monto restante
+                return `<option value="${fondo.idFondo}" data-max="${maxMonto}">${fondo.categoriaFondo} (Restante: ${maxMonto}€)</option>`;
+            }).join('');
+
+            if (fondosOptions === '') {
+                Swal.fire({
+                    title: "No hay fondos activos",
+                    text: "Actualmente no tienes fondos activos disponibles para agregar una subcategoría.",
+                    icon: "warning"
+                });
+                return; 
+            }
+
+            Swal.fire({
+                title: "Nueva subcategoría",
+                html: `
+                    <div class="mb-3 text-start">
+                        <label for="selectFondo" class="form-label">Selecciona un fondo</label>
+                        <select class="form-select" id="selectFondo" required>
+                            ${fondosOptions}
+                        </select>
+                    </div>
+                    <div class="mb-3 text-start">
+                        <label for="nombreSubcategoria" class="form-label">Nombre</label>
+                        <input type="text" class="form-control" id="nombreSubcategoria" placeholder="Ej. Transporte" required>
+                    </div>
+                    <div class="mb-3 text-start">
+                        <label for="montoAsignado" class="form-label">Monto objetivo</label>
+                        <input type="range" class="form-range" id="montoAsignado" min="0" step="1" value="0" required>
+                        <span id="rangeValue">0</span> <!-- Muestra el valor del range -->
+                    </div>
+                `,
+                confirmButtonText: "Crear",
+                showCancelButton: true,
+                preConfirm: () => {
+                    let montoAsignado = parseFloat(document.getElementById("montoAsignado").value);
+
+                    if (montoAsignado === 0) {
+                        Swal.showValidationMessage("El monto objetivo debe ser mayor a 0");
+                        return false; 
+                    }
+
+                    return {
+                        idFondo: document.getElementById("selectFondo").value,
+                        nombreSubcategoria: document.getElementById("nombreSubcategoria").value,
+                        montoAsignado: document.getElementById("montoAsignado").value
+                    };
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    enviarDatosSubcategoria(result.value);
+                }
+            });
+
+            // Actualizar el valor del rango al seleccionar un fondo
+            document.getElementById("selectFondo").addEventListener("change", function() {
+                let selectedOption = this.options[this.selectedIndex];
+                let maxMonto = selectedOption.getAttribute("data-max");  // Obtener el máximo monto disponible
+
+                // Establecer el rango y mostrar el valor máximo en el slider
+                let montoAsignadoInput = document.getElementById("montoAsignado");
+                montoAsignadoInput.max = maxMonto;  // Establecer el máximo
+                document.getElementById("rangeValue").textContent = "0";  // Iniciar en 0
+            });
+
+            // Actualizar el valor mostrado del slider (esto no cambia el max, solo el valor)
+            document.getElementById("montoAsignado").addEventListener("input", function () {
+                document.getElementById("rangeValue").textContent = this.value;
+            });
+
+            // Establecer el máximo inicial cuando se carga el cuadro de diálogo
+            let initialSelectFondo = document.getElementById("selectFondo");
+            if (initialSelectFondo && initialSelectFondo.value) {
+                let selectedOption = initialSelectFondo.options[initialSelectFondo.selectedIndex];
+                let maxMonto = selectedOption.getAttribute("data-max");
+                let montoAsignadoInput = document.getElementById("montoAsignado");
+                montoAsignadoInput.max = maxMonto;  // Establecer el máximo
+                document.getElementById("rangeValue").textContent = "0";  // Iniciar en 0
+            }
+        });
+
+        function enviarDatosSubcategoria(datos) {
+            fetch('/FondosReserva/CreateSubcategoria', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    idFondo: datos.idFondo,   
+                    nombreSubcategoria: datos.nombreSubcategoria,
+                    montoAsignado: parseFloat(datos.montoAsignado)
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire('Éxito', 'Subcategoría creada correctamente', 'success')
+                        .then(() => location.reload());
+                } else {
+                    Swal.fire('Error', data.message || 'No se pudo crear la subcategoría', 'error');
+                }
+            })
+            .catch(() => {
+                Swal.fire('Error', 'Hubo un problema con la conexión', 'error');
+            });
+        }
+
+        function confirmarEliminacionSubcategoria(idSubcategoria) {
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: 'Esto eliminará la subcategoría de forma permanente.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    eliminarSubcategoria(idSubcategoria);
+                }
+            });
+        }
+
+        function eliminarSubcategoria(idSubcategoria) {
+            fetch('/FondosReserva/EliminarSubcategoria', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ idSubcategoria: idSubcategoria })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire('Eliminado', 'La subcategoría fue eliminada correctamente.', 'success')
+                        .then(() => location.reload());
+                } else {
+                    Swal.fire('Error', 'No se pudo eliminar la subcategoría.', 'error');
+                }
+            })
+            .catch(error => {
+                Swal.fire('Error', 'Hubo un problema al intentar eliminar la subcategoría.', 'error');
+            });
+        }
+
+
+        document.querySelectorAll('.btnEditarSubcategoria').forEach(button => {
+            button.addEventListener('click', function () {
+                // Obtener los datos de la subcategoría
+                const idSubcategoria = this.getAttribute('data-idsubcategoria');
+                const nombreSubcategoria = this.getAttribute('data-nombresubcategoria');
+                const montoAsignado = parseFloat(this.getAttribute('data-montoasignado'));
+                const montoUtilizado = parseFloat(this.getAttribute('data-montoutilizado'));
+
+                // Mostrar el modal de SweetAlert2 para editar los valores
+                Swal.fire({
+                    title: `Editar subcategoría`,
+                    html: `
+                        <div class="mb-3 text-start">
+                            <label for="nombreSubcategoria" class="form-label">Nombre</label>
+                            <input type="text" class="form-control" id="nombreSubcategoria" value="${nombreSubcategoria}">
+                        </div>
+                        <div class="mb-3 text-start">
+                            <label for="montoAsignado" class="form-label">Monto asignado</label>
+                            <input type="number" class="form-control" id="montoAsignado" value="${montoAsignado}" step="0.01" min="0">
+                        </div>
+                        <div class="mb-3 text-start">
+                            <label for="montoAsignado" class="form-label">Monto utilizado</label>
+                            <input type="number" class="form-control" id="montoUtilizado" value="${montoUtilizado}" step="0.01" min="0">
+                        </div>
+                    `,
+                    showCancelButton: true,
+                    confirmButtonText: 'Guardar cambios',
+                    cancelButtonText: 'Cancelar',
+                    preConfirm: () => {
+                        // Obtener los nuevos valores de los campos
+                        const nuevoNombreSubcategoria = document.getElementById('nombreSubcategoria').value;
+                        const nuevoMontoAsignado = parseFloat(document.getElementById('montoAsignado').value);
+                        const nuevoMontoUtilizado = parseFloat(document.getElementById('montoUtilizado').value);
+
+                        // Validar si los valores son válidos
+                        if (isNaN(nuevoMontoAsignado) || isNaN(nuevoMontoUtilizado)) {
+                            Swal.showValidationMessage('Por favor, ingresa valores válidos.');
+                            return false;
+                        }
+                    
+                        if (nuevoMontoUtilizado < 0 || nuevoMontoAsignado < nuevoMontoUtilizado) {
+                            Swal.showValidationMessage(`El monto utilizado debe estar entre 0 y ${nuevoMontoAsignado.toFixed(2)}`);
+                            return false;
+                        }
+
+                        // Enviar los cambios al servidor
+                        return fetch('/FondosReserva/ActualizarSubcategoria', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                IdSubcategoria: parseInt(idSubcategoria),
+                                NombreSubcategoria: nuevoNombreSubcategoria,
+                                MontoAsignado: nuevoMontoAsignado,
+                                MontoUtilizado: nuevoMontoUtilizado,
+                            })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: '¡Subcategoría actualizada!',
+                                    text: 'La subcategoría ha sido actualizada correctamente.',
+                                    confirmButtonText: 'Aceptar'
+                                }).then(() => {
+                                    location.reload();
+                                });
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: 'No se pudo actualizar la subcategoría.',
+                                    confirmButtonText: 'Aceptar'
+                                });
+                            }
+                        })
+                        .catch(error => {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: 'Ocurrió un error al actualizar la subcategoría.',
+                                confirmButtonText: 'Aceptar'
+                            });
+                        });
+                    }
+                });
+            });
+        });
+
+        document.querySelectorAll('.btnAgregarUtilizadoSubcategoria').forEach(button => {
+            button.addEventListener('click', function () {
+                const idSubcategoria = this.getAttribute('data-idsubcategoria');
+                const montoAsignado = parseFloat(this.getAttribute('data-montoasignado'));
+                const montoUtilizado = parseFloat(this.getAttribute('data-montoutilizado'));
+                const montoRestante = montoAsignado - montoUtilizado;  
+
+                Swal.fire({
+                    title: `Agregar monto utilizado`,
+                    html: `
+                        <div class="mb-3 text-start">
+                            <label for="montoAgregar" class="form-label">Cantidad a agregar al monto utilizado</label>
+                            <input type="number" class="form-control" id="montoAgregar" min="1" max="${montoRestante}" step="0.01" value="1">
+                            <small class="form-text text-muted">Puedes agregar hasta ${montoRestante.toFixed(2)}.</small>
+                        </div>
+                    `,
+                    showCancelButton: true,
+                    confirmButtonText: 'Agregar',
+                    cancelButtonText: 'Cancelar',
+                    preConfirm: () => {
+                        const montoAgregar = parseFloat(document.getElementById('montoAgregar').value);
+
+                        if (isNaN(montoAgregar) || montoAgregar < 1 || montoAgregar > montoRestante) {
+                            Swal.showValidationMessage(`Por favor, ingresa un valor entre 1 y ${montoRestante.toFixed(2)}.`);
+                            return false;
+                        }
+
+                        // Enviar los cambios al servidor
+                        return fetch('/FondosReserva/ActualizarMontoUtilizado', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                IdSubcategoria: idSubcategoria,
+                                MontoUtilizado: montoAgregar  
+                            })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: '¡Monto actualizado!',
+                                    text: 'El monto utilizado ha sido actualizado correctamente.',
+                                    confirmButtonText: 'Aceptar'
+                                }).then(() => {
+                                    location.reload();  
+                                });
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: 'No se pudo actualizar el monto utilizado.',
+                                    confirmButtonText: 'Aceptar'
+                                });
+                            }
+                        })
+                        .catch(error => {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: 'Ocurrió un error al actualizar el monto utilizado.',
+                                confirmButtonText: 'Aceptar'
+                            });
+                        });
+                    }
+                });
+            });
+        });
+
+    </script>
+}

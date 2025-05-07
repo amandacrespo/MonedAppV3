@@ -1,0 +1,620 @@
+﻿@{
+    ViewData["Title"] = "Transacciones";
+    var categorias = ViewData["Categorias"] as List<CategoriaDTO>;
+    // var cuenta = Model.FirstOrDefault()?.Cuenta;
+    var year = DateTime.Now.Year;
+}
+
+@using System.Globalization
+
+@model List<TransaccionDTO>
+
+
+@if (Model != null && Model.Any())
+{
+    <div class="container-fluid m-0 p-0">
+        <div class="row g-3">
+            <!-- Large item -->
+            <div class="col-lg-12">
+                <div class="bento-item bento-table">
+                    <div class="d-flex justify-content-between align-items-lg-start mb-2">
+                        <div>
+                            <!-- Título de la sección -->
+                            <h5>
+                                <i class="fa-solid fa-arrow-right-arrow-left me-2"></i> Transacciones totales (@Model.Count())
+                            </h5>
+
+                            <form id="formSeleccionCuenta" method="post" asp-controller="Transacciones" asp-action="Index">
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <select class="form-select w-auto py-1" id="selectCuenta" name="idCuenta">
+                                        @foreach (CuentasAdminDTO cu in ViewBag.Cuentas)
+                                        {
+                                            <option value="@cu.IdCuenta" selected="@(cu.IdCuenta == ViewBag.CuentaSeleccionada ? "selected" : null)">
+                                                @cu.NombreCuenta
+                                            </option>
+                                        }
+                                    </select>
+                                    <button type="submit" class="btn btn-primary btn-sm" @(ViewBag.Cuentas.Count > 1 ? "" : "disabled")>Cambiar</button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Botón -->
+                        <button class="btn btn-sm btn-primary" id="btnAgregarFila">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                    </div>
+
+                    <!-- Contenedor con scroll -->
+                    <div class="table-responsive">
+
+                        @{
+                            // Agrupar las transacciones por año y mes, y luego ordenarlas en orden descendente
+                            var transaccionesAgrupadas = Model
+                            .GroupBy(t => new { t.Fecha.Year, t.Fecha.Month })
+                            .OrderByDescending(g => g.Key.Year) 
+                            .ThenByDescending(g => g.Key.Month);  
+                        }
+
+                        <!-- Tabla de Transacciones -->
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Categoría</th>
+                                    <th>Monto</th>
+                                    <th>Tipo</th>
+                                    <th>Descripción</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var grupo in transaccionesAgrupadas)
+                                {
+                                    var mesAnio = grupo.Key;
+                                    var mesNombre = CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(mesAnio.Month);
+                                    var mesCapitalizado = char.ToUpper(mesNombre[0]) + mesNombre.Substring(1).ToLower();
+
+                                    <tr>
+                                        <td colspan="6" class="text-start fw-normal">
+                                            <i class="fa-solid fa-calendar-days me-2"></i><span style="color: #0d47a1;">@mesCapitalizado @mesAnio.Year</span>
+                                        </td>
+                                    </tr>
+
+                                    @foreach (var transaccion in grupo.OrderByDescending(t => t.Fecha)) // Ordenar las transacciones de cada mes de forma descendente
+                                    {
+                                        <tr data-id="@transaccion.IdTransaccion" data-idcuenta="@transaccion.IdCuenta">
+                                            <td>
+                                                <input type="text" class="form-control fecha" value="@transaccion.Fecha.ToString("dd-MM-yyyy")" disabled />
+                                            </td>
+                                            <td>
+                                                <select class="form-control categoria" disabled>
+                                                    <optgroup label="Ingreso">
+                                                        @foreach (var categoria in categorias.Where(c => c.Tipo == "I").Distinct())
+                                                        {
+                                                            <option value="@categoria.IdCategoria" selected=@(transaccion.IdCategoria == categoria.IdCategoria ? true : false)>
+                                                                @categoria.Nombre
+                                                            </option>
+                                                        }
+                                                    </optgroup>
+
+                                                    <optgroup label="Gasto">
+                                                        @foreach (var categoria in categorias.Where(c => c.Tipo == "G").Distinct())
+                                                        {
+                                                            <option value="@categoria.IdCategoria" selected=@(transaccion.IdCategoria == categoria.IdCategoria ? true : false)>
+                                                                @categoria.Nombre
+                                                            </option>
+                                                        }
+                                                    </optgroup>
+                                                </select>
+                                            </td>
+                                            <td>
+                                                <input type="number" class="form-control monto" value="@transaccion.Monto.ToString("F2", CultureInfo.InvariantCulture)" disabled />
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control tipo @((transaccion.Tipo == 'I') ? "text-success" : "text-danger")" value="@(transaccion.Tipo == 'I' ? "Ingreso" : "Gasto")" disabled />
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control descripcion" value="@transaccion.Descripcion" disabled />
+                                            </td>
+                                            <td class="text-center text-nowrap align-middle" style="width: 110px;">
+                                                <button class="btn btn-sm btn-secondary btn-editar"><i class="fa-solid fa-pen"></i></button>
+                                                <button class="btn btn-sm btn-success btn-guardar" style="display:none;"><i class="fa-solid fa-floppy-disk"></i></button>
+                                                <button class="btn btn-sm btn-danger btn-eliminar"><i class="fa-solid fa-trash"></i></button>
+                                                <button class="btn btn-sm btn-primary btn-detalles"><i class="fa-solid fa-circle-info"></i></button>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="container-fluid m-0 p-0">
+        <div class="row g-3">
+            <!-- Large item -->
+            <div class="col-lg-12">
+                <div class="bento-item bento-table">
+                    <div class="d-flex justify-content-between align-items-lg-start mb-2">
+                        <div>
+                            <!-- Título de la sección -->
+                            <h5>
+                                <i class="fa-solid fa-arrow-right-arrow-left me-2"></i> Transacciones totales (@Model.Count())
+                            </h5>
+
+                            <form id="formSeleccionCuenta" method="post" asp-controller="Transacciones" asp-action="Index">
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <select class="form-select w-auto py-1" id="selectCuenta" name="idCuenta">
+                                        @foreach (CuentasAdminDTO cu in ViewBag.Cuentas)
+                                        {
+                                            <option value="@cu.IdCuenta" selected="@(cu.IdCuenta == ViewBag.CuentaSeleccionada ? "selected" : null)">
+                                                @cu.NombreCuenta
+                                            </option>
+                                        }
+                                    </select>
+                                    <button type="submit" class="btn btn-primary btn-sm" @(ViewBag.Cuentas.Count > 1 ? "" : "disabled")>Cambiar</button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Botón -->
+                        <button class="btn btn-sm btn-primary" id="btnAgregarFila">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                    </div>
+
+                    <!-- Contenedor con scroll -->
+                    <div class="table-responsive">
+                        <div class="alert alert-secondary mt-1 mb-3" role="alert">
+                            <i class="fa-solid fa-circle-info me-2"></i> ¡Rellena tu primera transacción para comenzar a gestionar tus finanzas!
+                        </div>
+
+
+                        <!-- Tabla de Transacciones -->
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Categoría</th>
+                                    <th>Monto</th>
+                                    <th>Tipo</th>
+                                    <th>Descripción</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <script>
+            window.onload = function() {
+                Swal.fire({
+                    icon: 'error',
+                    title: '¡Error!',
+                    text: '@TempData["ErrorMessage"]',
+                    confirmButtonText: 'Aceptar'
+                });
+            };
+        </script>
+    }
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <script>
+            window.onload = function() {
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Éxito!',
+                    text: '@TempData["SuccessMessage"]',
+                    confirmButtonText: 'Aceptar'
+                });
+            };
+        </script>
+    }
+
+    <script>
+        const categorias = @Html.Raw(Json.Serialize(categorias));
+        const cuentaSeleccionada = @Html.Raw(Json.Serialize(ViewBag.CuentaSeleccionada));
+        const editarButtons = document.querySelectorAll('.btn-editar');
+        const guardarButtons = document.querySelectorAll('.btn-guardar');
+
+        editarButtons.forEach((button, index) => {
+            button.addEventListener('click', function() {
+                const row = button.closest('tr');
+
+                row.querySelectorAll('input').forEach(input => {
+                    if (!input.classList.contains('tipo')) {
+                        input.disabled = false;
+                    }
+                });
+
+                // Hacer que el campo "Tipo" sea visible pero no editable
+                const tipoInput = row.querySelector('.tipo');
+                tipoInput.disabled = false; 
+                tipoInput.readOnly = true; 
+
+                // Cambiar el select a editable
+                row.querySelector('.categoria').disabled = false;
+
+                button.style.display = 'none';  // Ocultar el botón de editar
+                guardarButtons[index].style.display = 'inline';  // Mostrar el botón de guardar
+            });
+        });
+
+
+        document.querySelectorAll('.categoria').forEach(select => {
+            select.addEventListener('change', function() {
+                const row = this.closest('tr'); // Obtener la fila de la transacción
+                const tipoInput = row.querySelector('.tipo'); // Obtener el input de tipo
+
+                const optgroupLabel = this.selectedOptions[0].parentElement.label;
+                const esIngreso = optgroupLabel === "Ingreso";
+
+                tipoInput.value = esIngreso ? "Ingreso" : "Gasto";
+
+                // Cambiar color del texto (verde para Ingreso, rojo para Gasto)
+                tipoInput.classList.remove('text-success', 'text-danger'); 
+                tipoInput.classList.add(esIngreso ? 'text-success' : 'text-danger');
+            });
+        });
+
+        guardarButtons.forEach((button, index) => {
+            button.addEventListener('click', function() {
+                const row = button.closest('tr');
+
+                const idTransaccion = parseInt(row.getAttribute('data-id'), 10);
+                const idCuenta = parseInt(row.getAttribute('data-idcuenta'), 10);
+
+                const fecha = row.querySelector('.fecha').value;
+                const fechaConvertida = formatFecha(fecha);
+
+                const idCategoria = parseInt(row.querySelector('.categoria').value, 10);
+                const monto = parseFloat(row.querySelector('.monto').value); 
+
+                if (isNaN(monto) || isNaN(idTransaccion) || isNaN(idCuenta) || isNaN(idCategoria)) {
+                    console.error('Datos inválidos.');
+                    return; 
+                }            
+
+                // Obtener el grupo de la categoría seleccionada (Ingreso o Gasto) basado en el select
+                const categoriaSelect = row.querySelector('.categoria');
+                const optgroupLabel = categoriaSelect.selectedOptions[0].parentElement.label;
+                const tipo = optgroupLabel === 'Ingreso' ? 'I' : 'G'; 
+
+                const descripcion = row.querySelector('.descripcion').value;
+
+                const fechaTransaccion = new Date(fechaConvertida);
+                const fechaCreacionCuenta = new Date(@Html.Raw(Json.Serialize(ViewBag.FechaCreacion)));
+
+                if (fechaTransaccion.setHours(0, 0, 0, 0) < fechaCreacionCuenta.setHours(0, 0, 0, 0)) {
+                    const dia = fechaCreacionCuenta.getDate().toString().padStart(2, '0');
+                    const mes = (fechaCreacionCuenta.getMonth() + 1).toString().padStart(2, '0');
+                    const año = fechaCreacionCuenta.getFullYear();
+
+                    const fechaFormateada = `${dia}/${mes}/${año}`;
+
+                    Swal.fire({
+                        icon: "warning",
+                        title: "Fecha no válida",
+                        text: "No puedes actualizar transacciones con fecha anterior a la fecha de creación de la cuenta (" + fechaFormateada + ").",
+                    });
+                } else {
+                    fetch('/Transacciones/ActualizarTransaccion', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            IdTransaccion: idTransaccion,
+                            IdCuenta: idCuenta,
+                            IdCategoria: idCategoria,
+                            Monto: monto,
+                            Tipo: tipo,
+                            Fecha: fechaConvertida,
+                            Descripcion: descripcion
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            row.querySelectorAll('input').forEach(input => {
+                                input.disabled = true;
+                            });
+                            row.querySelector('.categoria').disabled = true;  // Deshabilitar el select de categoría
+                            button.style.display = 'none';  // Ocultar el botón de guardar
+                            row.querySelector('.btn-editar').style.display = 'inline';  // Mostrar el botón de editar
+
+                            Swal.fire({
+                                icon: 'success',
+                                title: '¡Éxito!',
+                                text: 'Transacción actualizada con éxito',
+                                confirmButtonText: 'Aceptar'
+                            }).then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: '¡Error!',
+                                text: 'Hubo un error al actualizar la transacción',
+                                confirmButtonText: 'Aceptar'
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error al guardar la transacción:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: '¡Error!',
+                            text: 'Hubo un error al actualizar la transacción',
+                            confirmButtonText: 'Aceptar'
+                        });
+                    });
+                }
+            });
+        });
+
+        document.getElementById("btnAgregarFila").addEventListener("click", function () {
+            const tbody = document.querySelector("tbody"); // Obtiene el cuerpo de la tabla
+            const nuevaFila = document.createElement("tr"); // Crear una nueva fila vacía
+
+            // Crear la celda del select
+            const selectCategoria = document.createElement("select");
+            selectCategoria.classList.add("form-control", "categoria");
+
+            // Crear los optgroups de Ingreso y Gasto
+            const optgroupIngreso = document.createElement("optgroup");
+            optgroupIngreso.label = "Ingreso";
+            const optgroupGasto = document.createElement("optgroup");
+            optgroupGasto.label = "Gasto";
+
+            // Verifica que categorias no esté vacío
+            if (categorias.length > 0) {
+                categorias.forEach(categoria => {
+                     const option = document.createElement("option");
+                    option.value = categoria.idCategoria; 
+                    option.textContent = categoria.nombre; 
+
+                    // Clasificar en el optgroup correspondiente
+                    if (categoria.tipo === 'I') {
+                        optgroupIngreso.appendChild(option);
+                    } else if (categoria.tipo === 'G') {
+                        optgroupGasto.appendChild(option);
+                    }
+                });
+
+                // Verificar si los optgroups tienen opciones antes de agregarlos
+                if (optgroupIngreso.children.length > 0) {
+                    selectCategoria.appendChild(optgroupIngreso);
+                }
+                if (optgroupGasto.children.length > 0) {
+                    selectCategoria.appendChild(optgroupGasto);
+                }
+            } else {
+                console.error("La lista de categorías está vacía.");
+            }
+
+            nuevaFila.innerHTML = `
+                <td><input type="text" class="form-control fecha" placeholder="dd-mm-yyyy" /></td>
+                <td></td> <!-- Aquí se insertará el select dinámicamente -->
+                <td><input type="number" class="form-control monto" placeholder="0.00" /></td>
+                <td><input type="text" class="form-control tipo" value="Ingreso" readonly /></td>
+                <td><input type="text" class="form-control descripcion" placeholder="Descripción" /></td>
+                <td>
+                    <button class="btn btn-sm btn-success btn-guardar"><i class="fa-solid fa-floppy-disk"></i></button>
+                    <button class="btn btn-sm btn-danger btn-eliminar"><i class="fa-solid fa-trash"></i></button>
+                </td>
+            `;
+
+            // Insertar el select en la segunda celda (categoría)
+            nuevaFila.children[1].appendChild(selectCategoria);
+            // Agregar la nueva fila al inicio de la tabla
+            tbody.prepend(nuevaFila);
+
+            // Evento para cambiar el tipo (Ingreso/Gasto) según la categoría seleccionada
+            selectCategoria.addEventListener("change", function () {
+                const optgroupLabel = selectCategoria.selectedOptions[0].parentElement.label;
+                const inputTipo = nuevaFila.querySelector(".tipo");
+                inputTipo.value = optgroupLabel === "Ingreso" ? "Ingreso" : "Gasto";
+            });
+
+            nuevaFila.querySelector(".btn-eliminar").addEventListener("click", function () {
+                nuevaFila.remove();
+            });
+
+            // Evento para guardar la nueva transacción
+            nuevaFila.querySelector(".btn-guardar").addEventListener("click", function () {
+                const fecha = nuevaFila.querySelector('.fecha').value;
+                const fechaConvertida = formatFecha(fecha);
+                const idCategoria = parseInt(selectCategoria.value, 10);
+                const monto = parseFloat(nuevaFila.querySelector('.monto').value);
+                const tipo = nuevaFila.querySelector(".tipo").value === "Ingreso" ? "I" : "G";
+                const descripcion = nuevaFila.querySelector('.descripcion').value;
+
+                if (!fecha || isNaN(idCategoria) || isNaN(monto) || !descripcion) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: '¡Atención!',
+                        text: 'Por favor, complete todos los campos antes de guardar.',
+                        confirmButtonText: 'Aceptar'
+                    });
+                    return;
+                }
+
+                const fechaTransaccion = new Date(fechaConvertida);
+                const fechaCreacionCuenta = new Date(@Html.Raw(Json.Serialize(ViewBag.FechaCreacion)));
+
+                if (fechaTransaccion.setHours(0, 0, 0, 0) < fechaCreacionCuenta.setHours(0, 0, 0, 0)) {
+                    const dia = fechaCreacionCuenta.getDate().toString().padStart(2, '0'); 
+                    const mes = (fechaCreacionCuenta.getMonth() + 1).toString().padStart(2, '0'); 
+                    const año = fechaCreacionCuenta.getFullYear();
+
+                    const fechaFormateada = `${dia}/${mes}/${año}`;
+
+                    Swal.fire({
+                        icon: "warning",
+                        title: "Fecha no válida",
+                        text: "No puedes registrar transacciones antes de la fecha de creación de la cuenta (" + fechaFormateada + ").",
+                    });
+                } else {
+                    fetch('/Transacciones/CrearTransaccion', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            IdCuenta: cuentaSeleccionada,  
+                            IdCategoria: idCategoria,
+                            Monto: monto,
+                            Tipo: tipo,
+                            Fecha: fechaConvertida,
+                            Descripcion: descripcion
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: '¡Guardado!',
+                                text: 'Transacción agregada con éxito',
+                                confirmButtonText: 'Aceptar'
+                            }).then(() => location.reload());
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: '¡Error!',
+                                text: 'No se pudo agregar la transacción',
+                                confirmButtonText: 'Aceptar'
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error al guardar la transacción:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: '¡Error!',
+                            text: 'Ocurrió un problema al guardar la transacción',
+                            confirmButtonText: 'Aceptar'
+                        });
+                    });
+                }
+            });
+        });
+
+        document.querySelectorAll('.btn-eliminar').forEach(button => {
+            button.addEventListener('click', function(e) {
+                const row = button.closest('tr');
+                const transaccionId = row.getAttribute('data-id'); // Obtener el ID de la transacción
+
+                Swal.fire({
+                    title: '¿Estás seguro?',
+                    text: "¡Esta acción no se puede deshacer!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Eliminar',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        fetch(`/Transacciones/Delete/${transaccionId}`, {
+                            method: 'DELETE', 
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        })
+                        .then(response => response.json()) 
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: '¡Eliminado!',
+                                    text: data.message, 
+                                    confirmButtonText: 'Aceptar'
+                                }).then(() => {
+                                    location.reload(); 
+                                });
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: '¡Error!',
+                                    text: data.message,
+                                    confirmButtonText: 'Aceptar'
+                                });
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error al eliminar la transacción:', error);
+                            Swal.fire({
+                                icon: 'error',
+                                title: '¡Error!',
+                                text: 'Hubo un problema al eliminar la transacción.',
+                                confirmButtonText: 'Aceptar'
+                            });
+                        });
+                    }
+                });
+            });
+        });
+
+        document.querySelectorAll('.btn-detalles').forEach(button => {
+            button.addEventListener('click', function() {
+                const row = button.closest('tr');  // Obtener la fila de la transacción
+                const fecha = row.querySelector('.fecha').value;
+                const categoria = row.querySelector('.categoria').selectedOptions[0].textContent;
+                const monto = row.querySelector('.monto').value;
+                const tipo = row.querySelector('.tipo').value;
+                const descripcion = row.querySelector('.descripcion').value;
+
+                const contenido = `
+                    <div class="text-start mx-2 mx-md-5">
+                        <strong>Fecha:</strong> ${fecha} <br>
+                        <strong>Categoría:</strong> ${categoria} <br>
+                        <strong>Monto:</strong> ${monto}<br>
+                        <strong>Tipo:</strong> ${tipo} <br>
+                        <strong>Descripción:</strong> ${descripcion}
+                    </div>
+                `;
+
+                Swal.fire({
+                    title: 'Detalles de la transacción',
+                    html: contenido, 
+                    icon: 'info',
+                    confirmButtonText: 'Cerrar'
+                });
+            });
+        });
+
+        // Convierte fechas tipo dd-MM-yyyy o dd/MM/yyyy a yyyy-MM-dd
+        function formatFecha(fecha) {
+            const separador = fecha.includes('-') ? '-' : '/';
+            const partes = fecha.split(separador);
+            const [dia, mes, anio] = partes;
+            return `${anio}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`;
+        }
+
+    </script>
+
+
+    @if (Model.Count == 0)
+    {
+        <script>
+            document.getElementById("btnAgregarFila").click();
+        </script>
+    }
+}

@@ -1,0 +1,211 @@
+﻿.bento-item {
+    height: 200px;
+    border-radius: 10px;
+    padding:15px 20px;
+    color: black;
+    background-color: white;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    /*margin-bottom:2px;*/
+}
+
+    .bento-item h3 {
+        font-weight: normal !important; /* Elimina la negrita */
+    }
+
+
+.bento-tall {
+    padding: 15px 20px;
+    height: 100%;
+    min-height: 370px;
+    max-height: 383px;
+}
+
+.card {
+    height: auto;
+    width: 350px;
+    box-shadow: 2px 3px 4px rgba(0, 0, 0, 0.1);
+}
+
+.card-body {
+    flex-grow: 1;
+    width: auto;
+}
+
+img.card-img-top {
+    object-fit: cover; /* Ajusta la imagen dentro de la card */
+    height: 170px;
+}
+
+.bento-cuenta {
+    padding: 15px 20px;
+    height: auto;
+}
+
+.bento-denegado {
+    padding: 15px 20px;
+    /*height: auto;*/
+    height: calc(100vh - 125px);
+}
+
+.bento-tallGrap {
+    padding: 15px 20px;
+    height: auto;
+    min-height: 410px;
+}
+
+.bento-minGraf {
+    padding: 15px 20px;
+    height: 100%;
+    min-height: 370px;
+    max-height: 383px;
+    overflow: hidden;
+}
+
+.grafico {
+    height: auto !important;
+    max-height: 290px;
+    padding: 15px;
+    width: auto;
+}
+
+.bento-grafLin {
+    padding: 15px 20px;
+    height: 100%;
+    min-height: 330px;
+    overflow: hidden;
+}
+
+.graficoLin {
+    height: auto !important;
+    /*max-height: 272px;*/
+    max-height: 390px;
+    padding: 15px;
+    width: auto;
+}
+
+.bento-medium {
+    /*height: auto;*/
+    padding: 15px 20px;
+    overflow: hidden;
+    height: 100%;
+}
+
+.bento-medium-cat {
+    height: auto;
+    padding: 15px 20px;
+    overflow: hidden;
+}
+
+@media (max-width: 1000px) {
+    .bento-tall {
+        height: auto;
+        min-height: auto;
+    }
+
+    .bento-minGraf {
+        height: auto;
+        min-height: auto;
+    }
+
+    .grafico {
+        height: auto !important;
+        max-height: 250px;
+        padding: 15px;
+        width: auto;
+    }
+
+    .bento-tallGrap {
+        height: auto; /* La altura será automática en pantallas pequeñas */
+        min-height: auto; /* Elimina el min-height en pantallas pequeñas */
+    }
+
+
+    .card {
+        width: 100%;
+    }
+}
+
+.bento-table {
+    padding: 15px 20px;
+    height: auto;
+}
+
+.bento-min {
+    height: 100%; 
+    max-height: 430px; 
+    padding: 15px 20px;
+    overflow: hidden; 
+}
+
+.graficoCat {
+    height: auto !important; 
+    max-height: 398px;
+    padding: 15px;
+    width: auto;
+    max-width: 830px;
+}
+
+/* Si el contenido dentro de .bento-item puede ser más grande que el contenedor, usa overflow-auto */
+.bento-item {
+    overflow-y: auto; /* Permite el desplazamiento vertical si el contenido es más grande */
+}
+
+.container-fluid {
+    --bs-gutter-x: 1.5rem;
+    --bs-gutter-y: 0;
+    width: 100%;
+}
+
+@media (max-width: 768px) {
+    .bento-item {
+        padding: 10px 15px;
+    }
+
+    .bento-denegado {
+        height: calc(100vh - 104px);
+    }
+}
+
+i:not(i.fa-right-from-bracket, i.fa-pen, i.fa-floppy-disk, i.fa-trash, i.fa-plus, i.fa-circle-info, i.fa-list, i.fa-minus, i.fa-folder-plus, i.fa-exclamation-circle, i.fa-paper-plane, i.fa-check-to-slot, i.fa-spinner.fa-spin, i.fa-check-circle, i.fa-ban, i.fa-user-slash, i.fa-edit) {
+    color: #0d47a1;
+}
+
+.bg-primary {
+    background-color: #0d47a1 !important;
+}
+
+.text-primary {
+    color: #0d47a1 !important;
+}
+
+.table-responsive {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+.table {
+    width: 100%; 
+    table-layout: auto;
+    min-width: 760px;
+}
+
+th, td {
+    padding: 8px;
+    text-align: left;
+}
+
+tr:nth-child(even) {
+    background-color: #f2f2f2; /* Fondo gris claro en filas pares */
+}
+
+th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+}
+
+input.form-control {
+    width: 100%; /* Los inputs ocuparán todo el espacio disponible dentro de cada celda */
+    padding: 6px 10px;
+    box-sizing: border-box; /* Asegura que el padding no haga que los inputs se desborden */
+}

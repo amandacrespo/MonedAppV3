@@ -1,0 +1,633 @@
+﻿@{
+    ViewData["Title"] = "Categorias";
+    List<CategoriaConCuentaDTO> personalizadas = ViewBag.Personalizadas ?? new List<CategoriaConCuentaDTO>();
+}
+
+@model List<CategoriaDTO>
+
+<div class="container-fluid m-0 p-0">
+    <div class="row g-3">
+        <!-- Medium item -->
+        <div class="col-lg-6">
+            <div class="bento-item bento-medium-cat">
+                <h5 class="pb-1">
+                    <i class="fa-solid fa-sliders me-2"></i>Predefinidas
+                </h5>
+
+                <ul class="list-group mt-2">
+                    @foreach (var categoria in Model.OrderBy(c => c.Nombre).Take(3))
+                    {
+                        <li class="list-group-item d-flex justify-content-between align-items-center bg-sidebar p-2 list-group-item-action m-0">
+                            <div class="text-start">
+                                <div class="fw-bold">@categoria.Nombre</div>
+                                <small class="text-muted small fs-7">@categoria.Descripcion</small>
+                            </div>
+                            <span class="badge @(categoria.Tipo == "I" ? "text-bg-success" : "text-bg-danger") rounded-pill fw-normal ms-3">
+                                @(categoria.Tipo == "I" ? "Ingreso" : "Gasto")
+                            </span>
+                        </li>
+                    }
+
+                    <!-- Categorías ocultas -->
+                    @if (Model.Count > 3)
+                    {
+                        <div id="categoriasOcultas" class="d-none">
+                            @foreach (var categoria in Model.OrderBy(c => c.Nombre).Skip(3))
+                            {
+                            <li class="list-group-item d-flex justify-content-between align-items-center p-2 bg-sidebar list-group-item-action m-0">
+                                <div class="text-start">
+                                    <div class="fw-bold">@categoria.Nombre</div>
+                                    <small class="text-muted small fs-7">@categoria.Descripcion</small>
+                                </div>
+                                <span class="badge @(categoria.Tipo == "I" ? "text-bg-success" : "text-bg-danger") rounded-pill fw-normal ms-3">
+                                        @(categoria.Tipo == "I" ? "Ingreso" : "Gasto")
+                                </span>
+                            </li>
+                            }
+                        </div>
+
+                        <!-- Contenedor para alinear los botones a la derecha -->
+                        <div class="d-flex justify-content-end mt-0">
+                            <button class="btn btn-sm btn-link" id="verMasBtn">Ver más</button>
+                            <button class="btn btn-sm btn-link d-none" id="verMenosBtn">Ver menos</button>
+                        </div>
+                    }
+                </ul>
+            </div>
+        </div>
+        <!-- Medium item -->
+        <div class="col-lg-6">
+            <div class="bento-item bento-medium bento-medium-cat">
+                <div class="d-flex justify-content-between align-items-center mb-2 pb-1">
+                    <h5 class="mb-0">
+                        <i class="fa-solid fa-pen-to-square me-2"></i>Personalizadas
+                    </h5>
+                    <button class="btn btn-primary btn-sm" id="addCategoriaBtn">
+                        <i class="fa-solid fa-plus"></i>
+                    </button>
+                </div>
+
+                @if (personalizadas == null || !personalizadas.Any())
+                {
+                    <div class="alert alert-secondary mt-3 role="alert">
+                        <i class="fa-solid fa-circle-info me-2"></i>Sin categorías personalizadas por ahora.
+                    </div>
+                }
+                else
+                {
+                    <ul class="list-group mt-2">
+                        @foreach (var categoria in personalizadas.OrderBy(c => c.Nombre).Take(2))
+                        {
+                            <li class="list-group-item d-flex justify-content-between align-items-center bg-sidebar p-2 list-group-item-action m-0">
+                                <!-- Contenedor principal para los botones y la información de la categoría -->
+                                <div class="d-flex align-items-center">
+                                    <!-- Contenedor de los botones de Editar y Eliminar -->
+                                    <div class="d-flex flex-column align-items-center justify-content-center me-3">
+                                        <!-- Botón Editar -->
+                                        <button class="btn btn-sm btn-secondary btn-editar mb-1" onclick="editarCategoria('@categoria.IdCategoria')">
+                                            <i class="fa-solid fa-pen"></i>
+                                        </button>
+
+                                        <!-- Botón Eliminar -->
+                                        <button class="btn btn-sm btn-danger btn-eliminar" onclick="confirmarEliminacion('@categoria.IdCategoria')">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </div>
+
+                                    <!-- Contenido de la categoría -->
+                                    <div class="text-start">
+                                        <div class="fw-bold">@categoria.Nombre</div>
+                                        <small class="text-muted small fs-7">@categoria.Descripcion</small>
+
+                                        <div class="text-start w-100 mt-1">
+                                            <small class="text-muted p-1 px-2 rounded-pill bg-secondary-subtle fw-semibold" style="font-size:12px;">@categoria.NombreCuenta</small>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Badge (Ingreso/Gasto) -->
+                                <span class="badge @(categoria.Tipo == "I" ? "text-bg-success" : "text-bg-danger") rounded-pill fw-normal ms-3">
+                                        @(categoria.Tipo == "I" ? "Ingreso" : "Gasto")
+                                </span>
+                            </li>
+                        }
+
+                        <!-- Categorías ocultas -->
+                        @if (personalizadas.Count > 2)
+                        {
+                            <div id="categoriasOcultas2" class="d-none">
+                                @foreach (var categoria in personalizadas.OrderBy(c => c.Nombre).Skip(2))
+                                {
+                                    <li class="list-group-item d-flex justify-content-between align-items-center bg-sidebar p-2 list-group-item-action m-0">
+                                        <div class="d-flex align-items-center">
+                                            <!-- Contenedor de los botones de Editar y Eliminar -->
+                                            <div class="d-flex flex-column align-items-center justify-content-center me-3">
+                                                <!-- Botón Editar -->
+                                                <button class="btn btn-sm btn-secondary btn-editar mb-1" onclick="editarCategoria('@categoria.IdCategoria')">
+                                                    <i class="fa-solid fa-pen"></i>
+                                                </button>
+
+                                                <!-- Botón Eliminar -->
+                                                <button class="btn btn-sm btn-danger btn-eliminar" onclick="confirmarEliminacion('@categoria.IdCategoria')">
+                                                    <i class="fa-solid fa-trash"></i>
+                                                </button>
+                                            </div>
+
+                                            <!-- Contenido de la categoría -->
+                                            <div class="text-start">
+                                                <div class="fw-bold">@categoria.Nombre</div>
+                                                <small class="text-muted small fs-7">@categoria.Descripcion</small>
+
+                                                <div class="text-start w-100 mt-1">
+                                                    <small class="text-muted p-1 px-2 rounded-pill bg-secondary-subtle fw-semibold" style="font-size:12px;">@categoria.NombreCuenta</small>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Badge (Ingreso/Gasto) -->
+                                        <span class="badge @(categoria.Tipo == "I" ? "text-bg-success" : "text-bg-danger") rounded-pill fw-normal ms-3">
+                                                    @(categoria.Tipo == "I" ? "Ingreso" : "Gasto")
+                                        </span>
+                                    </li>
+                                }
+                            </div>
+
+                            <!-- Contenedor para alinear los botones a la derecha -->
+                            <div class="d-flex justify-content-end">
+                                <button class="btn btn-sm btn-link" id="verMasBtn2">Ver más</button>
+                                <button class="btn btn-sm btn-link d-none" id="verMenosBtn2">Ver menos</button>
+                            </div>
+                        }
+                </ul>
+                }
+            </div>
+        </div>
+
+        <div class="col-lg-12">
+            <div class="bento-item bento-tallGrap">
+                <h5 class="mb-0">
+                    <i class="fa-solid fa-chart-simple me-2"></i> Estadística anual (@DateTime.Now.ToString("yyyy"))
+                </h5>
+
+                <!-- Fila para el selector y el botón -->
+                <div class="d-flex align-items-center gap-2 mb-2 mt-3">
+                    <label>Cuentas disponibles: </label>
+                    <select class="form-select w-auto" id="selectCuenta">
+                        @foreach (CuentaDTO cuenta in ViewBag.Cuentas)
+                        {
+                            <option value="@cuenta.IdCuenta">@cuenta.NombreCuenta</option>
+                        }
+                    </select>
+                    <button class="btn btn-primary" id="btnGenerarGrafico" @(ViewBag.Cuentas.Count > 0 ? "" : "disabled")>
+                        Generar
+                    </button>
+                </div>
+
+                @if (ViewBag.Cuentas.Count == 0)
+                {
+                    <div class="alert alert-secondary mt-3" role="alert">
+                        <i class="fa-solid fa-exclamation-circle me-2"></i>
+                        No tienes cuentas disponibles para generar estadísticas.
+                    </div>
+                } 
+                else 
+                {
+
+                    <div class="mx-lg-5 px-lg-5 d-flex justify-content-center">
+                        <!-- Contenedor del gráfico -->
+                        <canvas id="graficoTransacciones" class="graficoCat pb-1"></canvas>
+                    </div>
+
+                    <div class="alert alert-secondary mt-3" role="alert" id="alertaNoTransacciones" style="display:none;">
+                        <i class="fa-solid fa-circle-info me-2"></i>
+				        Para generar estadísticas, agrega las primeras <a class="alert-link fw-semibold" asp-controller="Transacciones" asp-action="Index">transacciones</a> en tus cuentas.
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts{
+    @if (ViewBag.Cuentas.Count > 0)
+    {
+        <script>
+            let chartInstance = null; // Variable para almacenar el gráfico y poder actualizarlo
+
+            document.getElementById("btnGenerarGrafico").addEventListener("click", async function (event) {
+                event.preventDefault();
+
+                const selectCuenta = document.getElementById("selectCuenta");
+                const cuentaId = selectCuenta.value;
+                const canvas = document.getElementById("graficoTransacciones");
+
+                const alertaNoTransacciones = document.getElementById("alertaNoTransacciones");
+                // Ocultamos la alerta de "sin transacciones" al hacer clic
+                alertaNoTransacciones.style.display = "none";
+
+                if (!cuentaId) {
+                    Swal.fire({
+                        icon: "warning",
+                        title: "Cuenta no seleccionada",
+                        text: "Selecciona una cuenta antes de generar el gráfico."
+                    });
+                    return;
+                }
+
+                try {
+                    // Realizar la solicitud POST con la cuenta seleccionada
+                    const response = await fetch(`/Categorias/EstadisticasCategorias`, {
+                        method: "POST", // Cambiar de GET a POST
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({ idCuenta: cuentaId }) // Mandar el idCuenta en el cuerpo de la solicitud
+                    });
+
+                    const data = await response.json();
+
+                    console.log("Datos recibidos:", data); // Verificar los datos recibidos
+
+                    if (!data.length) {
+                        // Mostrar la alerta si no hay datos
+                        alertaNoTransacciones.style.display = "block";
+                        canvas.style.display = "none";
+                        return;
+                    }
+
+                    // Ocultar la alerta y mostrar el gráfico si hay datos
+                    alertaNoTransacciones.style.display = "none";
+                    canvas.style.display = "block"; // Mostrar gráfico
+
+                    const categorias = [...new Set(data.map(t => t.categoria))];
+
+                    // Sumar todos los valores de cada categoría para el total anual
+                    const categoriasData = categorias.map(categoria => {
+                        const transaccionesPorCategoria = data.filter(t => t.categoria === categoria);
+                        const totalAnual = transaccionesPorCategoria.reduce((sum, t) => sum + t.total, 0);
+                        const tipo = transaccionesPorCategoria[0]?.tipo; // Asumimos que el tipo es el mismo para todas las transacciones de una categoría
+                        return { categoria, totalAnual, tipo };
+                    });
+
+                    // Si no hay datos, mostrar un mensaje y salir
+                    if (categoriasData.length === 0) {
+                        Swal.fire({
+                            icon: "info",
+                            title: "Sin datos",
+                            text: "No se encontraron transacciones para las categorías."
+                        });
+                        return;
+                    }
+
+                    // Generar los datos para el gráfico de rosco
+                    const labels = categoriasData.map(item => item.categoria);
+                    const dataValues = categoriasData.map(item => item.totalAnual);
+                    const backgroundColors = categoriasData.map(item => getColor(item.categoria, item.tipo)); // Colores basados en categoría y tipo
+
+                    // Destruir gráfico anterior si ya existe
+                    if (window.chartInstance) {
+                        window.chartInstance.destroy();
+                    }
+
+                    // Pintar nuevo gráfico con Chart.js (gráfico de rosco)
+                    const ctx = canvas.getContext("2d");
+                    window.chartInstance = new Chart(ctx, {
+                        type: "doughnut", // Tipo de gráfico rosco
+                        data: {
+                            labels: labels, // Categorías
+                            datasets: [{
+                                data: dataValues, // Datos de la suma anual
+                                backgroundColor: backgroundColors, // Colores basados en categorías y tipo
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: "bottom",
+                                    fullSize: false, // Evita que la leyenda ocupe todo el espacio
+                                    labels: {
+                                        font: {
+                                            size: 12
+                                        },
+                                        padding: 20 // Aumenta el espacio entre el gráfico y la leyenda
+                                    }
+                                }
+                            }
+                        }
+                    });
+
+                } catch (error) {
+                    console.error("Error obteniendo datos:", error);
+                    Swal.fire({
+                        icon: "error",
+                        title: "Error",
+                        text: "Ocurrió un problema al obtener los datos."
+                    });
+                    canvas.style.display = "none";
+                }
+            });
+
+            document.getElementById("btnGenerarGrafico").click();
+
+            // Colores para los ingresos (verdes)
+            const coloresVerde = [
+                "#a5d6a7", "#81c784", "#66bb6a", "#4caf50", "#43a047", "#388e3c", "#2e7d42",
+                "#1b5e20", "#558b2f", "#689f38", "#33691e"
+            ];
+
+            // Colores para los gastos (rojos)
+            const coloresRojo = [
+                "#ef9a9a", "#e57373", "#ef5350", "#f44336", "#e53935", "#d32f2f", "#c62828",
+                "#b71c1c", "#ff5252", "#ff1744", "#d50000"
+            ];
+
+            // Función para asignar colores a las categorías dependiendo del tipo (I para Ingresos, G para Gastos)
+            function getColor(categoria, tipo) {
+                // Colores para los ingresos (I)
+                if (tipo == "I") {
+                    // Asignar un color verde de la lista de ingresos
+                    return coloresVerde[categoria.charCodeAt(0) % coloresVerde.length]; // Utilizamos un índice basado en la categoría
+                }
+
+                // Colores para los gastos (G)
+                if (tipo == "G") {
+                    // Asignar un color rojo de la lista de gastos
+                    return coloresRojo[categoria.charCodeAt(0) % coloresRojo.length]; // Utilizamos un índice basado en la categoría
+                }
+
+                // Si no es ingreso ni gasto, asignar un color neutro o por defecto
+                return `hsl(${Math.random() * 360}, 70%, 60%)`; // Colores aleatorios en el caso de que no encaje en los anteriores
+            }
+        </script>
+    }
+
+    <script>
+        document.getElementById("verMasBtn")?.addEventListener("click", function () {
+            document.getElementById("categoriasOcultas").classList.remove("d-none");
+            this.classList.add("d-none");
+            document.getElementById("verMenosBtn").classList.remove("d-none");
+        });
+
+        document.getElementById("verMenosBtn")?.addEventListener("click", function () {
+            document.getElementById("categoriasOcultas").classList.add("d-none");
+            this.classList.add("d-none");
+            document.getElementById("verMasBtn").classList.remove("d-none");
+        });
+
+        document.getElementById("verMasBtn2")?.addEventListener("click", function () {
+            document.getElementById("categoriasOcultas2").classList.remove("d-none");
+            this.classList.add("d-none");
+            document.getElementById("verMenosBtn2").classList.remove("d-none");
+        });
+
+        document.getElementById("verMenosBtn2")?.addEventListener("click", function () {
+            document.getElementById("categoriasOcultas2").classList.add("d-none");
+            this.classList.add("d-none");
+            document.getElementById("verMasBtn2").classList.remove("d-none");
+        });
+
+        document.getElementById("addCategoriaBtn").addEventListener("click", function () {
+            // Obtener las cuentas desde ViewBag
+            const cuentas = @Html.Raw(Json.Serialize(ViewBag.Cuentas));
+
+            // Construir las opciones del select para las cuentas
+            let cuentasOptions = '';
+            cuentas.forEach(cuenta => {
+                cuentasOptions += `<option value="${cuenta.idCuenta}">${cuenta.nombreCuenta}</option>`;
+            });
+
+            // Mostrar el formulario con SweetAlert
+            Swal.fire({
+                title: 'Nueva categoría',
+                html: `
+                    <form id="categoriaForm" class="mt-1">
+                        <div class="mb-3 text-start">
+                            <label for="nombre" class="form-label">Nombre</label>
+                            <input type="text" class="form-control" id="nombre" placeholder="Ej. Monetización en YouTube" required>
+                        </div>
+                        <div class="mb-3 text-start">
+                            <label for="descripcion" class="form-label">Descripción</label>
+                            <textarea class="form-control" id="descripcion" placeholder="Ej. Ingresos generados por anuncios en mis videos." required></textarea>
+                        </div>
+                        <div class="mb-3 text-start">
+                            <label for="tipo" class="form-label">Tipo</label>
+                            <select class="form-select" id="tipo" required>
+                                <option value="" disabled selected>Seleccione un tipo</option>
+                                <option value="I">Ingreso</option>
+                                <option value="G">Gasto</option>
+                            </select>
+                        </div>
+                        <div class="mb-2 text-start">
+                            <label for="cuenta" class="form-label">Cuenta</label>
+                            <select class="form-select" id="cuenta" required>
+                                <option value="" disabled selected>Seleccione una cuenta</option>
+                                ${cuentasOptions} <!-- Aquí se insertan las opciones de las cuentas -->
+                            </select>
+                        </div>
+                    </form>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Guardar',
+                cancelButtonText: 'Cancelar',
+                preConfirm: () => {
+                    // Obtener los valores del formulario
+                    const nombre = document.getElementById('nombre').value;
+                    const descripcion = document.getElementById('descripcion').value;
+                    const tipo = document.getElementById('tipo').value;
+                    const idCuenta = document.getElementById('cuenta').value; // Obtener la cuenta seleccionada
+
+                    // Validación simple
+                    if (!nombre || !descripcion || !tipo || !idCuenta) {
+                        Swal.showValidationMessage('Por favor, complete todos los campos');
+                        return false;
+                    }
+
+                    console.log(nombre, descripcion, tipo, idCuenta)
+
+                    // Retornar los valores para procesarlos luego
+                    return { nombre, descripcion, tipo, idCuenta };
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Aquí puedes hacer una petición AJAX para enviar los datos al servidor
+
+                    // Suponiendo que el modelo tiene los campos de 'Nombre', 'Descripcion', 'Tipo' y 'IdCuenta'
+                    const categoriaData = result.value;
+
+                    // AJAX para enviar la nueva categoría
+                    fetch('/Categorias/CrearCategoria', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(categoriaData)
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                title: 'Éxito',
+                                text: data.message,
+                                icon: 'success',
+                                willClose: () => {
+                                    location.reload(); // Recarga la página después de cerrar el mensaje
+                                }
+                            });
+                        } else {
+                            Swal.fire('Error', data.message, 'error');
+                        }
+                    })
+                    .catch(error => {
+                        Swal.fire('Error', 'Hubo un problema al enviar los datos', 'error');
+                    });
+                }
+            });
+        });
+
+        function editarCategoria(idCategoria) {
+            fetch(`/Categorias/ObtenerCategoria/${idCategoria}`)
+                .then(response => response.json())
+                .then(categoria => {
+                    // Obtener las cuentas desde ViewBag
+                    const cuentas = @Html.Raw(Json.Serialize(ViewBag.Cuentas));
+
+                    // Construir las opciones del select para las cuentas
+                    let cuentasOptions = '';
+                    cuentas.forEach(cuenta => {
+                        const selected = cuenta.idCuenta === categoria.idCuenta ? 'selected' : '';
+                        cuentasOptions += `<option value="${cuenta.idCuenta}" ${selected}>${cuenta.nombreCuenta}</option>`;
+                    });
+
+                    // Mostrar el formulario con SweetAlert
+                    Swal.fire({
+                        title: 'Editar categoría',
+                        html: `
+                            <form id="categoriaForm" class="mt-1">
+                                <div class="mb-3 text-start">
+                                    <label for="nombre" class="form-label">Nombre</label>
+                                    <input type="text" class="form-control" id="nombre" value="${categoria.nombre}" required>
+                                </div>
+                                <div class="mb-3 text-start">
+                                    <label for="descripcion" class="form-label">Descripción</label>
+                                    <textarea class="form-control" id="descripcion" required>${categoria.descripcion}</textarea>
+                                </div>
+                                <div class="mb-3 text-start">
+                                    <label for="tipo" class="form-label">Tipo</label>
+                                    <select class="form-select" id="tipo" required>
+                                        <option value="I" ${categoria.tipo == 'I' ? 'selected' : ''}>Ingreso</option>
+                                        <option value="G" ${categoria.tipo == 'G' ? 'selected' : ''}>Gasto</option>
+                                    </select>
+                                </div>
+                                <div class="mb-2 text-start">
+                                    <label for="cuenta" class="form-label">Cuenta</label>
+                                    <select class="form-select" id="cuenta" required>
+                                        ${cuentasOptions}
+                                    </select>
+                                </div>
+                            </form>
+                        `,
+                        showCancelButton: true,
+                        confirmButtonText: 'Guardar',
+                        cancelButtonText: 'Cancelar',
+                        preConfirm: () => {
+                            const nombre = document.getElementById('nombre').value;
+                            const descripcion = document.getElementById('descripcion').value;
+                            const tipo = document.getElementById('tipo').value;
+                            const idCuenta = document.getElementById('cuenta').value;
+
+                            if (!nombre || !descripcion || !tipo || !idCuenta) {
+                                Swal.showValidationMessage('Por favor, complete todos los campos');
+                                return false;
+                            }
+
+                            return { idCategoria, nombre, descripcion, tipo, idCuenta };
+                        }
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            fetch('/Categorias/EditarCategoria', {
+                                method: 'PUT',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(result.value)
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    Swal.fire({
+                                        title: 'Éxito',
+                                        text: data.message,
+                                        icon: 'success',
+                                        willClose: () => location.reload()
+                                    });
+                                } else {
+                                    Swal.fire('Error', data.message, 'error');
+                                }
+                            })
+                            .catch(error => {
+                                Swal.fire('Error', 'Hubo un problema al enviar los datos', 'error');
+                            });
+                        }
+                    });
+                })
+                .catch(error => {
+                    Swal.fire('Error', 'No se pudo obtener la categoría', 'error');
+                });
+        }
+
+
+        function confirmarEliminacion(categoriaId) {
+            Swal.fire({
+                title: "¿Estás seguro?",
+                text: "Se eliminará esta categoría y todas sus transacciones asociadas de forma permanete.",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#d33",
+                cancelButtonColor: "#6c757d",
+                confirmButtonText: "Sí, eliminar",
+                cancelButtonText: "Cancelar"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    eliminarCategoria(categoriaId);
+                }
+            });
+        }
+
+        async function eliminarCategoria(categoriaId) {
+            try {
+                const response = await fetch(`/Categorias/Eliminar/${categoriaId}`, {
+                    method: "DELETE",
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                });
+
+                if (response.ok) {
+                    Swal.fire({
+                        icon: "success",
+                        title: "Eliminado",
+                        text: "La categoría y sus transacciones han sido eliminadas.",
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Error",
+                        text: "No se pudo eliminar la categoría."
+                    });
+                }
+            } catch (error) {
+                console.error("Error eliminando la categoría:", error);
+                Swal.fire({
+                    icon: "error",
+                    title: "Error",
+                    text: "Hubo un problema al eliminar la categoría."
+                });
+            }
+        }
+    </script>
+}

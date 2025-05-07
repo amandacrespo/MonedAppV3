@@ -1,0 +1,483 @@
+﻿@{
+    ViewData["Title"] = "Cuentas";
+}
+
+@model List<CuentaConMiembrosDTO>
+
+<div class="col-lg-12">
+    <div class="bento-item bento-cuenta">
+        <div class="d-flex justify-content-between align-items-lg-start mb-2">
+            <h5 class="mb-0">
+                <i class="fa-solid fa-wallet me-2"></i> Cuentas (@Model.Count)
+            </h5>
+
+            <!-- Botón -->
+            <button class="btn btn-sm btn-primary" id="btnAgregarCuenta">
+                <i class="fa-solid fa-plus"></i>
+            </button>
+        </div>
+
+        @if (Model != null && Model.Any())
+        {
+            <div class="row mt-3">
+                @foreach (var cuenta in Model)
+                {
+                    <div class="col-md-auto my-2">
+                        <div class="card">
+                            <!-- Imagen de la cuenta -->
+                            @* <img src="~/images/img-cuentas.jpeg" class="card-img-top" alt="Imagen de cuenta"> *@
+                            <img src="@AppImages.ConCuenta" class="card-img-top" alt="Imagen de cuenta">
+
+                            <!-- Contenedor para los botones de activar/desactivar -->
+                            <div class="position-absolute top-0 end-0 m-2">
+                                @if (cuenta.Rol == "Administrador"){
+                                    @if (cuenta.Estado != "Activa")
+                                    {
+                                        <a asp-controller="Cuentas" asp-action="ActivarCuenta" asp-route-id="@cuenta.IdCuenta" class="btn btn-sm btn-success">
+                                            <i class="fa-solid fa-check-circle me-2"></i>Activar
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <a asp-controller="Cuentas" asp-action="DesactivarCuenta" asp-route-id="@cuenta.IdCuenta" class="btn btn-sm btn-danger">
+                                            <i class="fas fa-ban me-2"></i>Desactivar
+                                        </a>
+                                    }
+                                }
+                            </div>
+
+                            <div class="card-body">
+                                <!-- Título de la cuenta -->
+                                <h5 class="card-title mb-1">@cuenta.NombreCuenta</h5>
+
+                                <span class="badge @(cuenta.TipoCuenta == "Personal" ? "bg-secondary" : "bg-primary") rounded-pill fw-normal mb-3">
+                                    @cuenta.TipoCuenta
+                                </span>
+
+                                <span class="badge @(cuenta.Estado == "Activa" ? "bg-success" : "bg-danger") rounded-pill fw-normal mb-3">
+                                    @cuenta.Estado
+                                </span>
+
+                                <!-- Mostrar saldo actual -->
+                                <p class="card-text mb-2">
+                                    <strong>Saldo Actual:</strong> @cuenta.SaldoActual @cuenta.Moneda
+                                </p>
+                                
+                                <p class="card-text mb-2">
+                                    <strong>Fecha de Creación:</strong> @cuenta.FechaCreacion.ToShortDateString()
+                                </p>
+
+                                <p class="card-text mt-4 mb-0">
+                                    @if (cuenta.Estado == "Activa"){
+                                        <form method="post" asp-controller="Dashboard" asp-action="Index" class="d-inline-block">
+                                            <input type="hidden" name="idCuenta" value="@cuenta.IdCuenta" />
+                                            <button type="submit" class="btn btn-sm btn-outline-primary">Dashboard</button>
+                                        </form>
+
+                                        @if (cuenta.Rol == "Administrador")
+                                        {
+                                            <form method="post" asp-controller="Transacciones" asp-action="Index" class="d-inline-block">
+                                                <input type="hidden" name="idCuenta" value="@cuenta.IdCuenta" />
+                                                <button type="submit" class="btn btn-sm btn-outline-secondary">Transacciones</button>
+                                            </form>
+                                        }
+                                    }
+                                </p>
+
+                                <!-- Botón de ver más detalles (Collapse) -->
+                                <button class="btn btn-sm btn-primary mt-0" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-@cuenta.IdCuenta" aria-expanded="false" aria-controls="collapse-@cuenta.IdCuenta">
+                                    Detalles
+                                </button>
+
+                                @if (cuenta.Rol == "Administrador"){
+                                    @if(cuenta.Estado == "Activa"){
+                                        <button class="btn btn-sm btn-secondary mt-0 btnEditarCuenta" data-idcuenta="@cuenta.IdCuenta">
+                                            <i class="fa-solid fa-pen"></i>
+                                        </button>
+
+                                        <form method="post" asp-controller="Cuentas" asp-action="EliminarCuenta" asp-route-id="@cuenta.IdCuenta" class="d-inline-block formEliminarCuenta">
+                                            <button class="btn btn-sm btn-danger btnEliminarCuenta">
+                                                <i class="fa-solid fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    }
+                                }
+                                else {
+                                    @if (cuenta.Estado == "Activa")
+                                    {
+                                        @if (Context.Session.GetString("Solicitado") == "true")
+                                        {
+                                            <button class="btn btn-sm btn-danger" disabled><i class="fa-solid fa-check-to-slot me-1"></i> Solicitado</button>
+                                        }
+                                        else {
+                                            <a class="btn btn-sm btn-danger" asp-controller="Cuentas" asp-action="CambiarRol" asp-route-idcuenta="@cuenta.IdCuenta"
+                                               onclick="cambiarABotonSpinner(this)">
+                                                <i class="fa-solid fa-paper-plane me-1"></i> Solicitar permisos
+                                            </a>
+
+                                            <script>
+                                                function cambiarABotonSpinner(element) {
+                                                    // Deshabilitar el enlace
+                                                    element.disabled = true;
+                                                    element.style.pointerEvents = "none";
+
+                                                    // Cambiar el contenido a un spinner
+                                                    element.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i>';
+                                                }
+                                            </script>
+                                        }
+                                    }
+                                }
+
+                                <!-- Detalles adicionales (Collapse) -->
+                                <div class="collapse" id="collapse-@cuenta.IdCuenta">
+                                    <div class="card card-body mt-3">
+                                        <p class="card-text mb-2">
+                                            <strong>Saldo Inicial:</strong> @cuenta.SaldoInicial @cuenta.Moneda
+                                        </p>
+                                        <p class="card-text mb-2">
+                                            <strong>Descripción:</strong> @cuenta.Descripcion
+                                        </p>
+                                        <!-- Si es cuenta compartida, mostrar los miembros -->
+                                        @if (cuenta.TipoCuenta == "Compartida")
+                                        {
+                                            @if (cuenta.Miembros.Count > 0)
+                                            {
+                                                <p class="card-text mb-2">
+                                                    <strong>Miembros:</strong>
+                                                    @foreach (var miembro in cuenta.Miembros)
+                                                    {
+                                                        <span>@miembro</span>
+                                                        @if (!cuenta.Miembros.Last().Equals(miembro))
+                                                        {
+                                                            <span>, </span>
+                                                        }
+                                                    }
+                                                </p>
+                                            }
+                                            else {
+                                                <div class="alert alert-secondary mt-2 mb-0" role="alert">
+                                                    <i class="fa-solid fa-exclamation-circle me-2"></i>
+                                                    Aún no has agregado ningún miembro a la cuenta.
+                                                </div>
+                                            }
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            @* <div class="alert alert-secondary mt-3 mb-0" role="alert">
+                <i class="fa-solid fa-exclamation-circle me-2"></i>
+                No tienes cuentas disponibles.
+            </div> *@
+            <div class="d-flex justify-content-center align-items-center text-center p-4 m-0" style="height: calc(100% - 45px);">
+                <div style="max-width: 620px;">
+                    @* <img src="~/images/sincuenta.png" alt="No cuentas" class="img-fluid mb-3" style="max-width: 215px;"> *@
+                    <img src="@AppImages.SinCuenta" alt="No cuentas" class="img-fluid mb-3" style="max-width: 215px;">
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    @if (TempData["Mensaje"] != null)
+    {
+        <script>
+            Swal.fire({
+                title: '@(TempData["MensajeTipo"]?.ToString() == "success" ? "Éxito" : "Error")',
+                text: '@TempData["Mensaje"]',
+                icon: '@TempData["MensajeTipo"]'
+            });
+        </script>
+    }
+
+    <script>
+        document.getElementById("btnAgregarCuenta").addEventListener("click", function () {
+            // Obtener las cuentas desde el modelo de la vista
+            const cuentas = @Html.Raw(Json.Serialize(Model));
+
+            // Inicializar una variable para saber si la opción "Personal" debe estar deshabilitada
+            let tipoCuentaDisabled = false;
+            cuentas.forEach(c => {
+                if (c.tipoCuenta == "Personal") {
+                    tipoCuentaDisabled = true; // Si ya existe una cuenta "Personal", deshabilitar la opción
+                }
+            });
+
+            // Mostrar el formulario con SweetAlert
+            Swal.fire({
+                title: 'Nueva Cuenta',
+                html: `
+                    <form id="cuentaForm" class="mt-1">
+                        <div class="mb-3 text-start">
+                            <label for="nombreCuenta" class="form-label">Nombre de la Cuenta</label>
+                            <input type="text" class="form-control" id="nombreCuenta" placeholder="Ej. Ahorros" required>
+                        </div>
+                        <div class="mb-3 text-start">
+                            <label for="descripcion" class="form-label">Descripción</label>
+                            <textarea class="form-control" id="descripcion" placeholder="Ej. Cuenta de ahorros personal"></textarea>
+                        </div>
+                        <div class="mb-3 text-start">
+                            <label for="tipoCuenta" class="form-label">Tipo de Cuenta</label>
+                            <select class="form-select" id="tipoCuenta" required>
+                                <option value="Personal" ${tipoCuentaDisabled ? "disabled" : ""}>Personal</option>
+                                <option value="Compartida">Compartida</option>
+                            </select>
+                        </div>
+                        <div class="mb-3 text-start">
+                            <label for="moneda" class="form-label">Moneda</label>
+                            <select class="form-select" id="moneda" required>
+                                <option value="EUR">Euro (€)</option>
+                            </select>
+                        </div>
+                        <div class="mb-3 text-start">
+                            <label for="saldoInicial" class="form-label">Saldo Inicial</label>
+                            <input type="number" class="form-control" id="saldoInicial" placeholder="Ej. 1000" required>
+                        </div>
+                    </form>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Guardar',
+                cancelButtonText: 'Cancelar',
+                preConfirm: () => {
+                    // Obtener los valores del formulario
+                    const nombreCuenta = document.getElementById('nombreCuenta').value;
+                    const descripcion = document.getElementById('descripcion').value;
+                    const tipoCuenta = document.getElementById('tipoCuenta').value;
+                    const moneda = document.getElementById('moneda').value;
+                    const saldoInicial = parseFloat(document.getElementById('saldoInicial').value);
+
+                    // Validaciones
+                    if (!nombreCuenta || !tipoCuenta || isNaN(saldoInicial) || saldoInicial < 0) {
+                        Swal.showValidationMessage('Por favor, complete los campos obligatorios correctamente.');
+                        return false;
+                    }
+
+                    // Retornar los valores para usarlos en el AJAX
+                    return {
+                        NombreCuenta: nombreCuenta,
+                        Descripcion: descripcion,
+                        TipoCuenta: tipoCuenta,
+                        Moneda: moneda,
+                        SaldoInicial: saldoInicial
+                    };
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Datos a enviar
+                    const cuentaData = result.value;
+
+                    // Enviar la petición al servidor
+                    fetch('/Cuentas/CrearCuenta', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(cuentaData)
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                title: 'Éxito',
+                                text: 'Cuenta creada correctamente.',
+                                icon: 'success',
+                                willClose: () => location.reload() // Recargar la página
+                            });
+                        } else {
+                            Swal.fire('Error', data.message, 'error');
+                        }
+                    })
+                    .catch(error => {
+                        Swal.fire('Error', 'Hubo un problema al crear la cuenta', 'error');
+                    });
+                }
+            });
+        });
+
+        document.querySelectorAll(".formEliminarCuenta").forEach(form => {
+            form.addEventListener("submit", function (event) {
+                event.preventDefault(); // Evitar el envío inmediato del formulario
+
+                Swal.fire({
+                    title: '¿Estás seguro?',
+                    text: "Se borrarán todos los datos asociados a esta cuenta y no se podrán recuperar.",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Sí, borrar',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit(); // Si el usuario confirma, enviamos el formulario
+                    }
+                });
+            });
+        });
+
+         document.querySelectorAll(".btnEditarCuenta").forEach(button => {
+            button.addEventListener("click", function () {
+                const idCuenta = this.dataset.idcuenta;
+
+                fetch(`/Cuentas/EditarCuenta?idCuenta=${idCuenta}`)
+                    .then(response => response.json())
+                    .then(cuenta => {
+                        if (!cuenta) {
+                            Swal.fire("Error", "No se pudo cargar la información de la cuenta.", "error");
+                            return;
+                        }
+
+                        const esCuentaPersonal = cuenta.tipoCuenta == "Personal";
+
+                        let miembrosHTML = "";
+
+                        if (!esCuentaPersonal) {
+                            cuenta.miembros.forEach(m => {
+                                miembrosHTML += `
+                                    <div class="d-flex justify-content-between align-items-center border rounded-2 py-2 px-3 mb-2 shadow-sm bg-light">
+                                        <div>
+                                            <span>${m.correo}</span>
+                                            <select class="form-select w-auto rol-miembro mt-2" data-idusuario="${m.IdUsuario}">
+                                                <option value="Miembro" ${m.rol === "Miembro" ? "selected" : ""}>Miembro</option>
+                                                <option value="Administrador" ${m.rol === "Administrador" ? "selected" : ""}>Administrador</option>
+                                            </select>
+                                        </div>
+                                        <button type="button" class="btn btn-outline-danger btn-sm btnEliminarMiembro" data-idusuario="${m.IdUsuario}">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </div>`;
+                            });
+                        }
+
+                        Swal.fire({
+                            title: 'Editar Cuenta',
+                            html: `
+                                <form id="cuentaForm" class="mt-1">
+                                    <div class="mb-3 text-start">
+                                        <label for="nombreCuenta" class="form-label">Nombre de la cuenta</label>
+                                        <input type="text" class="form-control" id="nombreCuenta" value="${cuenta.nombreCuenta}" required>
+                                    </div>
+                                    <div class="mb-3 text-start">
+                                        <label for="descripcion" class="form-label">Descripción</label>
+                                        <textarea class="form-control" id="descripcion">${cuenta.descripcion || ''}</textarea>
+                                    </div>
+                                    <div class="mb-3 text-start">
+                                        <label for="moneda" class="form-label">Moneda</label>
+                                        <select class="form-select" id="moneda" required>
+                                            <option value="EUR" ${cuenta.moneda === "EUR" ? "selected" : ""}>Euro (€)</option>
+                                        </select>
+                                    </div>
+
+                                    ${
+                                        esCuentaPersonal
+                                            ? ""
+                                            : `
+                                                <div class="mb-4 text-start">
+                                                    <label for="correosUsuarios" class="form-label">Agregar miembros (separados por comas)</label>
+                                                    <input type="text" class="form-control" id="correosUsuarios" placeholder="usuario1@email.com, usuario2@email.com">
+
+                                                    <label class="form-label mt-3">Rol de nuevos miembros</label>
+                                                    <select class="form-select" id="rolNuevoMiembro">
+                                                        <option value="Miembro">Miembro</option>
+                                                        <option value="Administrador">Administrador</option>
+                                                    </select>
+                                                </div>
+                                                <hr>
+                                                <div class="mt-4 mb-2 text-start">
+                                                    <label class="form-label">Miembros actuales</label>
+                                                    <div id="listaMiembros">${miembrosHTML || '<p class="text-muted">No hay miembros asignados.</p>'}</div>
+                                                </div>
+                                            `
+                                    }
+                                </form>
+                            `,
+                            showCancelButton: true,
+                            confirmButtonText: 'Guardar',
+                            cancelButtonText: 'Cancelar',
+                            didOpen: () => {
+                                document.querySelectorAll(".btnEliminarMiembro").forEach(btn => {
+                                    btn.addEventListener("click", function () {
+                                        this.parentElement.remove();
+                                    });
+                                });
+                            },
+                            preConfirm: () => {
+                                const nombreCuenta = document.getElementById('nombreCuenta').value;
+                                const descripcion = document.getElementById('descripcion').value;
+                                const moneda = document.getElementById('moneda').value;
+
+                                let cuentaData = { idCuenta, nombreCuenta, descripcion, moneda };
+
+                                // Solo incluir miembros si es una cuenta compartida
+                                if (!esCuentaPersonal) {
+                                    const correosUsuarios = document.getElementById('correosUsuarios').value
+                                        .split(",")
+                                        .map(email => email.trim())
+                                        .filter(email => email !== "");
+
+                                    const rolNuevoMiembro = document.getElementById("rolNuevoMiembro").value;
+
+                                    // Obtener los miembros actuales con sus roles actualizados
+                                    const miembrosRestantes = Array.from(document.querySelectorAll("#listaMiembros div")).map(el => {
+                                        return {
+                                            correo: el.querySelector("span").textContent,
+                                            rol: el.querySelector(".rol-miembro").value
+                                        };
+                                    });
+
+                                    // Agregar nuevos usuarios con su rol seleccionado
+                                    correosUsuarios.forEach(correo => {
+                                        miembrosRestantes.push({ correo, rol: rolNuevoMiembro });
+                                    });
+
+                                    cuentaData.miembros = miembrosRestantes;
+                                }
+
+                                if (!nombreCuenta) {
+                                    Swal.showValidationMessage("El nombre de la cuenta es obligatorio.");
+                                    return false;
+                                }
+
+                                return cuentaData;
+                            }
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                const cuentaData = result.value;
+
+                                fetch('/Cuentas/EditarCuenta', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify(cuentaData)
+                                })
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data.success) {
+                                        Swal.fire({
+                                            title: 'Éxito',
+                                            text: 'Cuenta actualizada correctamente.',
+                                            icon: 'success',
+                                            willClose: () => location.reload()
+                                        });
+                                    } else {
+                                        Swal.fire('Error', data.message, 'error');
+                                    }
+                                })
+                                .catch(() => {
+                                    Swal.fire('Error', 'Hubo un problema al actualizar la cuenta.', 'error');
+                                });
+                            }
+                        });
+                    })
+                    .catch(() => {
+                        Swal.fire("Error", "No se pudo cargar la información de la cuenta.", "error");
+                    });
+            });
+        });
+    </script>
+}

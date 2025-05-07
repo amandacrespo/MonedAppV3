@@ -1,0 +1,379 @@
+﻿@{
+    ViewData["Title"] = "Dashboard";
+    var dashboardInfo = ViewData["DashboardInfo"] as DashboardInfoDTO ?? null;
+}
+
+@if (dashboardInfo != null){
+    <div class="container-fluid m-0 p-0">
+        <div class="row g-3">
+            <div class="col-lg-3">
+                <div class="bento-item bento-min d-flex flex-column justify-content-center">
+                    <h5 class="d-flex justify-content-between">
+                        <span><i class="fa-solid fa-coins me-2"></i> Dinero inicial</span>
+                        <button class="btn btn-link p-0 ms-auto" type="button" data-bs-toggle="collapse" data-bs-target="#descripcionDineroInicial" aria-expanded="false" aria-controls="descripcionDineroInicial">
+                            <i class="fa-solid fa-info-circle text-muted"></i> 
+                        </button>
+                    </h5>
+
+                    <div class="collapse" id="descripcionDineroInicial">
+                        <p class="text-muted small">Saldo inicial, antes de realizar cualquier transacción en la cuenta.</p>
+                    </div>
+
+                    <h3 class="m-0">@dashboardInfo.MontoInicial EUR</h3>
+                </div>
+            </div>
+
+            <div class="col-lg-3">
+                <div class="bento-item bento-min d-flex flex-column justify-content-center">
+                    <h5 class="d-flex justify-content-between">
+                        <span><i class="fa-solid fa-wallet me-2"></i> Dinero actual</span>
+                        <button class="btn btn-link p-0" type="button" data-bs-toggle="collapse" data-bs-target="#descripcionDineroActual" aria-expanded="false" aria-controls="descripcionDineroActual">
+                            <i class="fa-solid fa-info-circle text-muted"></i> <!-- Ícono de información -->
+                        </button>
+                    </h5>
+
+                    <div class="collapse" id="descripcionDineroActual">
+                        <p class="text-muted small">Saldo actualmente, teniendo en cuenta todos los ingresos y gastos realizados.</p>
+                    </div>
+
+                    <h3 class="m-0">@dashboardInfo.MontoActual EUR</h3>
+                </div>
+            </div>
+
+            <div class="col-lg-3">
+                <div class="bento-item bento-min d-flex flex-column justify-content-center">
+                    <h5 class="d-flex justify-content-between">
+                        <span><i class="fa-solid fa-scale-balanced me-2"></i> Balance acumulado</span>
+                        <button class="btn btn-link p-0" type="button" data-bs-toggle="collapse" data-bs-target="#descripcionBalanceAcumulado" aria-expanded="false" aria-controls="descripcionBalanceAcumulado">
+                            <i class="fa-solid fa-info-circle text-muted"></i> <!-- Ícono de información -->
+                        </button>
+                    </h5>
+
+                    <div class="collapse" id="descripcionBalanceAcumulado">
+                        <p class="text-muted small">Saldo acumulado de tu cuenta, considerando los ingresos y gastos registrados hasta el momento.</p>
+                    </div>
+
+                    <h3 class="m-0 @(dashboardInfo.BalanceAcumulado > 0 ? "text-success" : (dashboardInfo.BalanceAcumulado < 0 ? "text-danger" : "text-secondary"))">
+                        @if (@dashboardInfo.BalanceAcumulado > 0)
+                        {
+                            <i class="fa-solid fa-arrow-trend-up text-success me-2"></i>
+                            <!-- Ícono para balance positivo -->
+                        }
+                        else if (@dashboardInfo.BalanceAcumulado < 0)
+                        {
+                            <i class="fa-solid fa-arrow-trend-down me-2 text-danger"></i>
+                            <!-- Ícono para balance negativo -->
+                        }
+                        else
+                        {
+                            <i class="fa-solid fa-minus text-secondary me-2"></i>
+                            <!-- Ícono neutral cuando el balance es 0 -->
+                        }
+
+                        @dashboardInfo.BalanceAcumulado EUR
+                    </h3>
+                </div>
+            </div>
+
+            <div class="col-lg-3">
+                <div class="bento-item bento-min d-flex flex-column justify-content-center">
+                    <h5 class="d-flex justify-content-between">
+                        <span><i class="fa-solid fa-scale-unbalanced-flip me-2"></i> Balance mensual</span>
+                        <button class="btn btn-link p-0" type="button" data-bs-toggle="collapse" data-bs-target="#descripcionBalanceMensual" aria-expanded="false" aria-controls="descripcionBalanceMensual">
+                            <i class="fa-solid fa-info-circle text-muted"></i> 
+                        </button>
+                    </h5>
+
+                    <div class="collapse" id="descripcionBalanceMensual">
+                        <p class="text-muted small">Saldo acumulado del mes en curso, calculado a partir de todos los ingresos y gastos registrados en ese periodo.</p>
+                    </div>
+
+                    <h3 class="m-0 @(dashboardInfo.BalanceMensual > 0 ? "text-success" : (dashboardInfo.BalanceMensual < 0 ? "text-danger" : "text-secondary"))">
+                        @if (@dashboardInfo.BalanceMensual > 0)
+                        {
+                            <i class="fa-solid fa-arrow-trend-up text-success me-2"></i>
+                            <!-- Ícono para balance positivo -->
+                        }
+                        else if (@dashboardInfo.BalanceMensual < 0)
+                        {
+                            <i class="fa-solid fa-arrow-trend-down me-2 text-danger"></i>
+                            <!-- Ícono para balance negativo -->
+                        }
+                        else
+                        {
+                            <i class="fa-solid fa-minus text-secondary me-2"></i>
+                            <!-- Ícono neutral cuando el balance es 0 -->
+                        }
+
+                        @dashboardInfo.BalanceMensual EUR
+                    </h3>
+                </div>
+            </div>
+
+            <!-- Large item -->
+            <div class="col-lg-8">
+                <div class="bento-item bento-tall">
+                    <!-- Título de la sección -->
+                    <h5 class="mb-1">
+                        <i class="fa-solid fa-arrow-right-arrow-left me-2"></i> Movimientos recientes (@DateTime.Now.ToString("MMMM yyyy"))
+                    </h5>
+                    <small class="text-muted mb-3 p-1 px-2 rounded-pill bg-secondary-subtle fw-semibold" style="font-size:12px;">@dashboardInfo.NombreCuenta</small>
+                    <small class="@(dashboardInfo.TipoCuenta == "Personal" ? "bg-secondary" : "bg-primary") rounded-pill fw-normal mb-3 p-1 px-2 text-white" style="font-size:12px;">
+                        @dashboardInfo.TipoCuenta
+                    </small>
+
+                    @if (dashboardInfo.UltimasTransacciones == null || !dashboardInfo.UltimasTransacciones.Any())
+                    {
+                        <!-- Mostrar alerta si no hay transacciones -->
+                        <div class="alert alert-secondary mt-3 mb-0 py-3" role="alert" id="alertaNoTransaccionesMes">
+                            <i class="fa-solid fa-circle-info me-2"></i> Sin registros este mes. Agrega tu primera
+
+                            <a asp-controller="Transacciones" asp-action="Index" asp-route-idCuenta="@dashboardInfo.IdCuenta"
+                               class="alert-link fw-semibold text-decoration-underline p-0 pb-1 m-0" style="color: #2b2f32;">
+                                transacción</a> ahora.
+                        </div>
+                    }
+                    else
+                    {
+                        <!-- Tabla para mostrar las últimas transacciones -->
+                        <div class="table-responsive my-2">
+                            <table class="table mb-1">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Monto</th>
+                                        <th scope="col">Tipo</th>
+                                        <th scope="col">Fecha</th>
+                                        <th scope="col">Descripción</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var transaccion in dashboardInfo.UltimasTransacciones.Take(5))
+                                    {
+                                        <tr>
+                                            <td>@transaccion.Monto</td>
+                                            <td class="@((transaccion.Tipo == 'I') ? "text-success" : "text-danger")">
+                                                @(transaccion.Tipo == 'I' ? "Ingreso" : "Gasto")
+                                            </td>
+                                            <td>@transaccion.Fecha.ToString("dd/MM/yyyy")</td>
+                                            <td>@transaccion.Descripcion</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Mostrar el enlace solo si hay más de 7 transacciones -->
+                        @if (dashboardInfo.UltimasTransacciones.Count > 5)
+                        {
+                            <div class="text-end mt-2">
+                                <a asp-controller="Transacciones" asp-action="Index" asp-route-idCuenta="@dashboardInfo.IdCuenta">
+                                    Ver más
+                                </a>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+            <!-- Two small items -->
+            <div class="col-lg-4">
+                <div class="row g-4">
+                    <div class="col-12">
+                        <div class="bento-item bento-minGraf">
+                            <h5 class=" mb-1"><i class="fa-solid fa-chart-pie me-2"></i> Reporte mensual (@DateTime.Now.ToString("MMMM yyyy"))</h5>
+                            <small class="text-muted mb-3 p-1 px-2 rounded-pill bg-secondary-subtle fw-semibold" style="font-size:12px;">@dashboardInfo.NombreCuenta</small>
+                            <small class="@(dashboardInfo.TipoCuenta == "Personal" ? "bg-secondary" : "bg-primary") rounded-pill fw-normal mb-3 p-1 px-2 text-white" style="font-size:12px;">
+                                @dashboardInfo.TipoCuenta
+                            </small>
+
+                            @if (dashboardInfo.BalanceMensual == 0)
+                            {
+                                <div class="alert alert-secondary mt-3 mb-0 py-3" role="alert">
+                                    <i class="fa-solid fa-circle-info me-2"></i>
+                                    Aún no hay movimientos este mes.
+                                </div>
+                            }
+                            else
+                            {
+                                <canvas id="graficoCircular" class="grafico"></canvas>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Medium item -->
+            <div class="col-lg-12">
+                <div class="bento-item bento-grafLin">
+                    <h5 class="mb-0"><i class="fa-solid fa-chart-line me-2"></i> Evolución financiera anual (@DateTime.Now.ToString("yyyy"))</h5>
+                    <!-- Div para la alerta -->
+                    <div id="alertaGrafico" class="alert alert-secondary mt-3 mb-0 py-3" style="display: none;" role="alert"></div>
+
+                    <!-- El gráfico de línea -->
+                    <canvas id="lineChart" class="graficoLin" style="display: block;"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="container-fluid m-0 p-0">
+        <div class="row g-3">
+            <!-- Large item -->
+            <div class="col-lg-12">
+                <div class="bento-item">
+                    <p>No se encontraron cuentas activas.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts{
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <script>
+            window.onload = function() {
+                Swal.fire({
+                icon: 'error',
+                title: '¡Error!',
+                text: '@TempData["ErrorMessage"]',
+                confirmButtonText: 'Aceptar'
+                });
+            };
+        </script>
+    }
+
+    @if (dashboardInfo != null)
+    {
+        @* Calcular ingresos y gastos en C# *@
+        @if (dashboardInfo.BalanceMensual != 0)
+        {
+            var ingresos = 0m; // Usar 'm' para asegurar que sea decimal
+            var gastos = 0m;
+
+            if (dashboardInfo?.UltimasTransacciones != null)
+            {
+                ingresos = dashboardInfo.UltimasTransacciones
+                    .Where(t => t.Tipo == 'I' && t.Fecha.Month == DateTime.Now.Month && t.Fecha.Year == DateTime.Now.Year)
+                    .Sum(t => t.Monto);
+
+                gastos = dashboardInfo.UltimasTransacciones
+                    .Where(t => t.Tipo == 'G' && t.Fecha.Month == DateTime.Now.Month && t.Fecha.Year == DateTime.Now.Year)
+                    .Sum(t => t.Monto);
+            }
+
+            var ingresosFormatted = ingresos.ToString("F2", System.Globalization.CultureInfo.InvariantCulture);
+            var gastosFormatted = gastos.ToString("F2", System.Globalization.CultureInfo.InvariantCulture);
+
+            <script>
+                var ingresos = parseFloat(@Html.Raw(ingresosFormatted.ToString()));
+                var gastos = parseFloat(@Html.Raw(gastosFormatted.ToString()));
+
+                var ctx = document.getElementById('graficoCircular').getContext('2d');
+                var graficoCircular = new Chart(ctx, {
+                    type: 'pie', 
+                    data: {
+                        labels: ['Ingresos', 'Gastos'],  
+                        datasets: [{
+                            label: 'Ingresos vs Gastos',
+                            data: [ingresos, gastos], 
+                            backgroundColor: ['#198754', '#dc3545'],  
+                            borderColor: ['#198754', '#dc3545'],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(tooltipItem) {
+                                        return tooltipItem.label + ': ' + tooltipItem.raw.toFixed(2) + ' EUR';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            </script>
+        }
+
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                // Verificar si dashboardInfo está disponible
+                const dashboard = @Html.Raw(Json.Serialize(dashboardInfo ?? new DashboardInfoDTO()));
+                const cuentaSeleccionada = dashboard.idCuenta || 0;
+
+                fetch(`/Dashboard/ObtenerDatosGrafico?idCuenta=${cuentaSeleccionada}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (!data.success) {
+                            // Mostrar mensaje de alerta si no hay datos
+                            const alertaGrafico = document.getElementById('alertaGrafico');
+                            alertaGrafico.style.display = 'block';
+                            alertaGrafico.innerHTML = `<i class="fa-solid fa-circle-info me-2"></i> ${data.message}`;
+
+                            // Ocultar el gráfico si no hay datos
+                            const grafico = document.getElementById('lineChart');
+                            grafico.style.display = 'none';
+
+                            console.error(data.message);
+                            return;
+                        }
+
+                        // Ocultar la alerta si los datos se cargan correctamente
+                        const alertaGrafico = document.getElementById('alertaGrafico');
+                        alertaGrafico.style.display = 'none';
+
+                        // Mostrar el gráfico
+                        const grafico = document.getElementById('lineChart');
+                        grafico.style.display = 'block';
+
+                        const ctx = document.getElementById('lineChart').getContext('2d');
+                        new Chart(ctx, {
+                            type: 'line',
+                            data: {
+                                labels: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'],
+                                datasets: [
+                                    {
+                                        label: 'Ingresos',
+                                        data: data.ingresos,
+                                        borderColor: 'rgba(40, 167, 69, 1)',
+                                        backgroundColor: 'rgba(40, 167, 69, 0.2)',
+                                        borderWidth: 2,
+                                        tension: 0.3
+                                    },
+                                    {
+                                        label: 'Gastos',
+                                        data: data.gastos,
+                                        borderColor: 'rgba(220, 53, 69, 1)',
+                                        backgroundColor: 'rgba(220, 53, 69, 0.2)',
+                                        borderWidth: 2,
+                                        tension: 0.3
+                                    }
+                                ]
+                            },
+                            options: {
+                                responsive: true,
+                                plugins: {
+                                    legend: { position: 'top' },
+                                    tooltip: { mode: 'index', intersect: false }
+                                },
+                                scales: {
+                                    y: {
+                                        beginAtZero: true,
+                                        ticks: { stepSize: 50 }
+                                    }
+                                }
+                            }
+                        });
+                    })
+                    .catch(error => console.error('Error al obtener datos:', error));
+            });
+        </script>
+    }
+}

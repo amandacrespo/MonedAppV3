@@ -1,0 +1,294 @@
+﻿@{
+    ViewData["Title"] = "Perfil de Usuario";
+    var estadisticas = ViewBag.Estadisticas as EstadisticasPerfilDTO;
+}
+
+@model UsuarioDTO
+
+<div class="col-lg-12">
+    <div class="bento-item bento-cuenta p-4">
+        <!-- Imagen de perfil centrada -->
+        <div class="text-center mt-1">
+            @* <img src="~/images/foto-perfil.png" alt="Foto de perfil" class="rounded-circle border" width="105" height="105"> *@
+            <img src="@AppImages.Perfil" alt="Foto de perfil" class="rounded-circle border" width="105" height="105">
+        </div>
+
+        <!-- Secciones de información -->
+        <div class="mt-4 mx-2 pt-3">
+            <!-- Sección: Información Personal -->
+            <div class="border-bottom pb-3 mb-3">
+                <div class="d-flex justify-content-between align-items-start">
+                    <h5 class="mb-3"><i class="fas fa-id-card me-2"></i> Información personal</h5>
+                    <div class="">
+                        <button class="btn btn-sm btn-outline-primary" id="btnEdit">
+                            <i class="fas fa-edit me-1"></i> Editar
+                        </button>
+                    </div>
+                </div>
+                 
+                <form id="form-personal">
+                    <div class="row">
+                        <!-- Campos editables -->
+                        <div class="col-lg-6 mb-3">
+                            <label for="nombre" class="form-label">Nombre</label>
+                            <input type="text" class="form-control editable" id="nombre" name="nombre" value="@Model.Nombre" disabled>
+                        </div>
+                        <div class="col-lg-6 mb-3">
+                            <label for="correo" class="form-label">Correo electrónico</label>
+                            <input type="email" class="form-control editable" id="correo" name="correo" value="@Model.CorreoElectronico" disabled>
+                        </div>
+
+                        <!-- Campos NO editables -->
+                        <div class="col-lg-6 mb-3">
+                            <label for="dni" class="form-label">DNI</label>
+                            <input type="text" class="form-control" id="dni" value="@Model.Dni" disabled>
+                        </div>
+                        <div class="col-lg-6 mb-3">
+                            <label for="fecha" class="form-label">Fecha de registro</label>
+                            <input type="text" class="form-control" id="fecha" value="@Model.FechaRegistro.ToString("dd/MM/yyyy")" disabled>
+                        </div>
+                    </div>
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-sm btn-success mt-2 d-none" id="btnSave"><i class="fa-solid fa-floppy-disk me-1"></i> Guardar</button>
+                        <button type="button" class="btn btn-sm btn-secondary mt-2 d-none" id="btnCancel">Cancelar</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Sección: Información de Cuentas -->
+            <div class="border-bottom pb-3 mb-4 mt-4">
+                <h5 class="mb-3"><i class="fas fa-wallet me-2"></i> Detalles de interacción</h5>
+                <div class="row">
+                    <!-- Total de Cuentas -->
+                    <div class="col-lg-4 col-md-6 mb-3">
+                        <label for="totalCuentas" class="form-label">Total de cuentas: </label>
+                        <div class="form-control-plaintext py-0" id="totalCuentas" style="font-size: 1.25rem;">
+                            @estadisticas.TotalCuentas
+                        </div>
+                    </div>
+
+                    <!-- Cuentas Activas -->
+                    <div class="col-lg-4 col-md-6 mb-3">
+                        <label for="cuentasActivas" class="form-label">Cuentas activas: </label>
+                        <div class="form-control-plaintext py-0" id="cuentasActivas" style="font-size: 1.25rem;">
+                            @estadisticas.CuentasActivas
+                        </div>
+                    </div>
+
+                    <!-- Cuentas Inactivas -->
+                    <div class="col-lg-4 col-md-6 mb-3">
+                        <label for="cuentasInactivas" class="form-label">Cuentas inactivas: </label>
+                        <div class="form-control-plaintext py-0" id="cuentasInactivas" style="font-size: 1.25rem;">
+                            @estadisticas.CuentasInactivas
+                        </div>
+                    </div>
+
+                    <!-- Total de Fondos -->
+                    <div class="col-lg-4 col-md-6 mb-3">
+                        <label for="totalFondos" class="form-label">Total de fondos: </label>
+                        <div class="form-control-plaintext py-0" id="totalFondos" style="font-size: 1.25rem;">
+                            @estadisticas.TotalFondos
+                        </div>
+                    </div>
+
+                    <!-- Total Monto Reservado -->
+                    <div class="col-lg-4 col-md-6 mb-3">
+                        <label for="totalMontoReservado" class="form-label">Monto reservado: </label>
+                        <div class="form-control-plaintext" id="totalMontoReservado" style="font-size: 1.25rem;">
+                            @estadisticas.TotalMontoReservado€
+                        </div>
+                    </div>
+
+                    <!-- Total Monto Gastado -->
+                    <div class="col-lg-4 col-md-6 mb-3">
+                        <label for="totalMontoGastado" class="form-label">Monto gastado: </label>
+                        <div class="form-control-plaintext py-0" id="totalMontoGastado" style="font-size: 1.25rem;">
+                            @estadisticas.TotalMontoGastado€
+                        </div>
+                    </div>
+
+                    <!-- Total de Transacciones -->
+                    <div class="col-lg-4 col-md-6 mb-3">
+                        <label for="totalTransacciones" class="form-label">Total de transacciones: </label>
+                        <div class="form-control-plaintext py-0" id="totalTransacciones" style="font-size: 1.25rem;">
+                            @estadisticas.TotalTransacciones
+                        </div>
+                    </div>
+
+                    <!-- Total Ingresos -->
+                    <div class="col-lg-4 col-md-6 mb-3">
+                        <label for="totalIngresos" class="form-label">Total de ingresos: </label>
+                        <div class="form-control-plaintext py-0" id="totalIngresos" style="font-size: 1.25rem;">
+                            @estadisticas.TotalIngresos€
+                        </div>
+                    </div>
+
+                    <!-- Total Gastos -->
+                    <div class="col-lg-4 col-md-6 mb-3">
+                        <label for="totalGastos" class="form-label">Total de gastos: </label>
+                        <div class="form-control-plaintext py-0" id="totalGastos" style="font-size: 1.25rem;">
+                            @estadisticas.TotalGastos€
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botón eliminar cuenta centrado -->
+            <div class="text-center">
+                <button class="btn btn-sm btn-outline-danger" id="btnDelete">
+                    <i class="fa-solid fa-trash me-1"></i> Eliminar cuenta
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @if (TempData["Mensaje"] != null)
+    {
+        <script>
+            Swal.fire({
+                title: '@(TempData["MensajeTipo"]?.ToString() == "success" ? "Éxito" : "Error")',
+                text: '@Html.Raw(TempData["Mensaje"])',
+                icon: '@TempData["MensajeTipo"]'
+            }).then(() => {
+                if ('@TempData["MensajeTipo"]' === "success") {
+                    location.reload(); // Recargar solo si la actualización fue exitosa
+                }
+            });
+        </script>
+    }
+
+    <script>
+        // Al pulsar el botón Editar
+        document.getElementById("btnEdit").addEventListener("click", function() {
+            let inputs = document.querySelectorAll(".editable");
+            let btnSave = document.getElementById("btnSave");
+            let btnEdit = document.getElementById("btnEdit");
+            let btnCancel = document.getElementById("btnCancel");
+
+            inputs.forEach(input => {
+                input.disabled = !input.disabled;
+            });
+
+            btnSave.classList.toggle('d-none');  
+            btnCancel.classList.toggle('d-none'); 
+            btnEdit.classList.add('d-none'); 
+        });
+
+        // Al pulsar el botón de Cancelar
+        document.getElementById("btnCancel").addEventListener("click", function() {
+            document.getElementById("nombre").value = "@Html.Raw(Model.Nombre)";
+            document.getElementById("correo").value = "@Html.Raw(Model.CorreoElectronico)";
+
+            let inputs = document.querySelectorAll(".editable");
+            let btnSave = document.getElementById("btnSave");
+            let btnEdit = document.getElementById("btnEdit");
+            let btnCancel = document.getElementById("btnCancel");
+
+            inputs.forEach(input => {
+                input.disabled = true;
+            });
+
+            btnSave.classList.add('d-none');  
+            btnCancel.classList.add('d-none');  
+            btnEdit.classList.remove('d-none');  
+        });
+
+        // Manejo de la petición de actualización usando fetch
+        document.getElementById("form-personal").addEventListener("submit", function(event) {
+            event.preventDefault();
+
+            let nombre = document.getElementById("nombre").value;
+            let correoElectronico = document.getElementById("correo").value;
+
+            let btnSave = document.getElementById("btnSave");
+            let btnCancel = document.getElementById("btnCancel");
+
+            // Deshabilitar botones para evitar múltiples envíos
+            btnSave.disabled = true;
+            btnCancel.disabled = true;
+            btnSave.innerText = "Guardando...";
+
+            fetch('@Url.Action("ActualizarPerfil", "Usuarios")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ nombre, correoElectronico })
+            })
+            .then(response => response.json())
+            .then(data => {
+                    // Si el usuario tiene activado el "Recordarme", actualizamos su email guardado
+                    const getCookie = (name) => {
+                        const value = `; ${document.cookie}`;
+                        const parts = value.split(`; ${name}=`);
+                        if (parts.length === 2) return parts.pop().split(';').shift();
+                    };
+
+                    const rememberMe = getCookie('rememberMe');
+                    if (rememberMe === 'true') {
+                        document.cookie = `email=${correoElectronico};path=/;max-age=604800;Secure;SameSite=Strict`;
+                    }
+
+                    location.reload(); // Para que se vea el mensaje de TempData
+            })
+            .catch(error => {
+                console.error("Error en la solicitud:", error);
+            })
+            .finally(() => {
+                // Reactivar botones en caso de error
+                btnSave.disabled = false;
+                btnCancel.disabled = false;
+                btnSave.innerText = "Guardar";
+            });
+        });
+
+        // Confirmar eliminación de cuenta
+        document.getElementById("btnDelete").addEventListener("click", function() {
+            const btnDelete = document.getElementById("btnDelete");  
+            btnDelete.disabled = true;  // Deshabilita el botón mientras se realiza la operación
+
+            Swal.fire({
+                title: "¿Eliminar cuenta?",
+                text: "Esta acción es irreversible. ¿Estás seguro?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Sí, eliminar",
+                cancelButtonText: "Cancelar"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch("/Usuarios/EliminarPerfil", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Eliminar cookies si existían
+                            document.cookie = "email=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;Secure;SameSite=Strict";
+                            document.cookie = "password=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;Secure;SameSite=Strict";
+                            document.cookie = "rememberMe=false; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;Secure;SameSite=Strict";
+
+                            Swal.fire("Eliminado", "Tu cuenta ha sido eliminada.", "success").then(() => {
+                                window.location.href = data.redirectUrl;
+                            });
+                        } else {
+                            Swal.fire("Error", data.message, "error");
+                        }
+                    })
+                    .catch(() => {
+                        Swal.fire("Error", "No se pudo conectar con el servidor.", "error");
+                    })
+                    .finally(() => {
+                        btnDelete.disabled = false; 
+                    });
+                } else {
+                    btnDelete.disabled = false;  
+                }
+            });
+        });
+    </script>
+}
