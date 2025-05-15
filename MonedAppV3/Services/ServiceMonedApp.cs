@@ -13,7 +13,7 @@ namespace MonedAppV3.Services
         private IHttpContextAccessor ContextAccesor;
 
         public ServiceMonedApp(IConfiguration configuration, IHttpContextAccessor contextAccesor) {
-            UrlApi = configuration.GetSection("ApiUrls:ApiAzure").Value;
+            UrlApi = configuration.GetSection("ApiUrls:ApiLocal").Value;
             Header = new MediaTypeWithQualityHeaderValue("application/json");
             ContextAccesor = contextAccesor;
         }
