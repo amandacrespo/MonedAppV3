@@ -1,9 +1,7 @@
 using Amazon.S3;
 using Azure.Security.KeyVault.Secrets;
-using Azure.Storage.Blobs;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Extensions.Azure;
-using MonedAppV3.Configuration;
 using MonedAppV3.Services;
 
 var builder = WebApplication.CreateBuilder(args);

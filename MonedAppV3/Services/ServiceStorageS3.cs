@@ -1,8 +1,5 @@
-﻿using Amazon.S3.Model;
-using Amazon.S3;
-using Azure.Storage.Blobs;
+﻿using Amazon.S3;
 using MonedAppV3.Configuration;
-using System.Net;
 
 namespace MonedAppV3.Services
 {
