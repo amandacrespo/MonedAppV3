@@ -1,3 +1,4 @@
+using Amazon.S3;
 using Azure.Security.KeyVault.Secrets;
 using Azure.Storage.Blobs;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -17,13 +18,14 @@ SecretClient secretClient = builder.Services.BuildServiceProvider()
 
 KeyVaultSecret secretStorageAccount = await secretClient.GetSecretAsync("storageaccount");
 
-BlobServiceClient blobServiceClient = new BlobServiceClient(secretStorageAccount.Value);
-builder.Services.AddSingleton(blobServiceClient);
-builder.Services.AddTransient<ServiceBlobs>();
+builder.Services.AddAWSService<IAmazonS3>();
+builder.Services.AddTransient<ServiceStorageS3>();
 
-ServiceBlobs serviceBlobs = new ServiceBlobs(blobServiceClient);
-AppImages appImages = await serviceBlobs.GetAppImagesAsync();
-builder.Services.AddSingleton(appImages);
+using (var tempProvider = builder.Services.BuildServiceProvider()) {
+    var serviceStorage = tempProvider.GetRequiredService<ServiceStorageS3>();
+    var appImages = await serviceStorage.GetAppImagesAsync();
+    builder.Services.AddSingleton(appImages);
+}
 
 builder.Services.AddControllersWithViews(options => options.EnableEndpointRouting = false);
 builder.Services.AddSession();
