@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using System.Net.Http.Headers;
 using System.Text;
 using NugetMonedAppAws.Models;
+using NugetMonedAppAws.DTOs;
 
 namespace MonedAppV3.Services
 {

@@ -4,12 +4,13 @@ using Microsoft.Extensions.Azure;
 using MonedAppV3.Services;
 using Newtonsoft.Json;
 using NugetMonedAppAws.Models;
+using MonedAppV3.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
 
 var jsonSecrets = HelperSecretManager.GetSecretsAsync().GetAwaiter().GetResult();
 KeysModel keysModel = JsonConvert.DeserializeObject<KeysModel>(jsonSecrets);
-services.AddSingleton<KeysModel>(keysModel);
+builder.Services.AddSingleton<KeysModel>(keysModel);
 
 builder.Services.AddAWSService<IAmazonS3>();
 builder.Services.AddTransient<ServiceStorageS3>();

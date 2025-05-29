@@ -1,5 +1,6 @@
 ﻿using Amazon.S3;
 using MonedAppV3.Configuration;
+using NugetMonedAppAws.Models;
 
 namespace MonedAppV3.Services
 {
@@ -7,8 +8,8 @@ namespace MonedAppV3.Services
     {
         private readonly string BucketUrl;
 
-        public ServiceStorageS3(IConfiguration configuration, IAmazonS3 s3Client) {
-            this.BucketUrl = configuration.GetValue<string>("AWS:BucketUrl");
+        public ServiceStorageS3(KeysModel keysModel, IAmazonS3 s3Client) {
+            this.BucketUrl = keysModel.BucketUrl;
         }
 
         public async Task<AppImages> GetAppImagesAsync() {
