@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using MonedAppV3.Filters;
 using MonedAppV3.Services;
-using NugetMonedAppV2.DTOs;
+using NugetMonedAppAws.DTOs;
 
 namespace MonedAppV3.Controllers
 {

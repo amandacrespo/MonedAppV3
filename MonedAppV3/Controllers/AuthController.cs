@@ -2,8 +2,8 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
-using NugetMonedAppV2.Models;
-using NugetMonedAppV2.DTOs;
+using NugetMonedAppAws.Models;
+using NugetMonedAppAws.DTOs;
 using MonedAppV3.Services;
 
 namespace MonedAppV3.Controllers

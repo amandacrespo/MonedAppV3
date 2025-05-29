@@ -2,8 +2,7 @@
 using Newtonsoft.Json;
 using System.Net.Http.Headers;
 using System.Text;
-using NugetMonedAppV2.Models;
-using NugetMonedAppV2.DTOs;
+using NugetMonedAppAws.Models;
 
 namespace MonedAppV3.Services
 {
@@ -13,7 +12,7 @@ namespace MonedAppV3.Services
         private IHttpContextAccessor ContextAccesor;
 
         public ServiceMonedApp(IConfiguration configuration, IHttpContextAccessor contextAccesor) {
-            UrlApi = configuration.GetSection("ApiUrls:ApiLocal").Value;
+            UrlApi = configuration.GetSection("ApiUrls:ApiAWS").Value;
             Header = new MediaTypeWithQualityHeaderValue("application/json");
             ContextAccesor = contextAccesor;
         }

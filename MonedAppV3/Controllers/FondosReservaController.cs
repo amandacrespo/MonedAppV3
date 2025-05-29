@@ -1,7 +1,7 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using MonedAppV3.Filters;
-using NugetMonedAppV2.DTOs;
+using NugetMonedAppAws.DTOs;
 using MonedAppV3.Services;
 
 namespace MonedAppV3.Controllers

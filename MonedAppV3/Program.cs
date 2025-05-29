@@ -1,20 +1,15 @@
 using Amazon.S3;
-using Azure.Security.KeyVault.Secrets;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Extensions.Azure;
 using MonedAppV3.Services;
+using Newtonsoft.Json;
+using NugetMonedAppAws.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddAzureClients(factory =>
-{
-    factory.AddSecretClient(builder.Configuration.GetSection("KeyVault"));
-});
-
-SecretClient secretClient = builder.Services.BuildServiceProvider()
-                                            .GetRequiredService<SecretClient>();
-
-KeyVaultSecret secretStorageAccount = await secretClient.GetSecretAsync("storageaccount");
+var jsonSecrets = HelperSecretManager.GetSecretsAsync().GetAwaiter().GetResult();
+KeysModel keysModel = JsonConvert.DeserializeObject<KeysModel>(jsonSecrets);
+services.AddSingleton<KeysModel>(keysModel);
 
 builder.Services.AddAWSService<IAmazonS3>();
 builder.Services.AddTransient<ServiceStorageS3>();
@@ -41,8 +36,7 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddTransient<ServiceMonedApp>();
 
 var app = builder.Build();
-
-// Configure the HTTP request pipeline.
+   
 if (!app.Environment.IsDevelopment()) {
     app.UseExceptionHandler("/Home/Error");
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.

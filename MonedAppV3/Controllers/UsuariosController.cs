@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using MonedAppV3.Services;
-using NugetMonedAppV2.DTOs;
+using NugetMonedAppAws.DTOs;
 using MonedAppV3.Filters;
 
 namespace MonedAppV3.Controllers
