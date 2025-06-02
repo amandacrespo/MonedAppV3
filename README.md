@@ -7,4 +7,4 @@ elena@gmail.com   -   El123456   (usuario con cuenta compartida con permisos de 
 aitor@gmail.com   -   Ai123456   (usuario con cuenta compartida sin permisos de admin)
 
 ## Link desplegado
-[https://monedapp.azurewebsites.net/Auth/Login](https://monedapp.duckdns.org/Auth/Login)
+https://monedapp.duckdns.org/Auth/Login
